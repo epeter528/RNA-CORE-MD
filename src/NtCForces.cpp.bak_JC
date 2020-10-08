@@ -1,0 +1,688 @@
+/* -------------------------------------------------------------------------- *
+ *                           MMB (MacroMoleculeBuilder)                       *
+ * -------------------------------------------------------------------------- *
+ *                                                                            *
+ * Copyright (c) 2011-12 by the Author.                                       *
+ * Author: Samuel Flores                                                      *
+ *                                                                            *
+ * See RNABuilder.cpp for the copyright and usage agreement.                  *
+ * -------------------------------------------------------------------------- */
+#include "NtCForces.h"  
+#include <string.h>
+#include <sstream>
+#include <Utils.h>
+
+    NTC_Torque::NTC_Torque (SimbodyMatterSubsystem& matter,ParameterReader& myParameterReader,  NTC_PAR_Class& myNTC_PAR_Class, BiopolymerClassContainer & myBiopolymerClassContainer, std::ostream& outputStream ) : matter(matter),myParameterReader(myParameterReader), myNTC_PAR_Class (myNTC_PAR_Class), myBiopolymerClassContainer(myBiopolymerClassContainer), outputStream(outputStream)
+        { 
+    };    
+     /* 
+    void NTC_Torque::calcAxes(const State& state ,NTC_PAR_BondRow myNTC_PAR_BondRow,ResidueID residueNumber1,ResidueID residueNumber2,String chainId1,String chain2,Vec3 & xAxisVector1,Vec3 & yAxisVector1, Vec3 & zAxisVector1,Vec3 & xAxisVector2,Vec3 & yAxisVector2 , Vec3 & zAxisVector2,
+        Vec3 & glycosidicNitrogenAtom1LocationInGround,Vec3 & glycosidicNitrogenAtom2LocationInGround, Vec3 & ring1CenterLocationInGround, Vec3 & ring2CenterLocationInGround) const { 
+      
+            ResidueID myResidueNumber;
+            ResidueID myResidueNumber2;
+            
+            myResidueNumber = residueNumber1;
+        
+            myResidueNumber.ResidueNumber += stoi(myNTC_PAR_BondRow.atom_shift[0]);      
+            
+            glycosidicNitrogenAtom1LocationInGround = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[0]);
+            
+            glycosidicNitrogenAtom2LocationInGround = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[0]);
+
+            myResidueNumber = residueNumber1;
+        
+            myResidueNumber.ResidueNumber += stoi(myNTC_PAR_BondRow.atom_shift[1]);            
+            
+            Vec3 firstRingAtomvector1 = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[1]) - glycosidicNitrogenAtom1LocationInGround;
+
+            myResidueNumber = residueNumber1;
+        
+            myResidueNumber.ResidueNumber += stoi(myNTC_PAR_BondRow.atom_shift[2]);
+            
+            Vec3 secondRingAtomvector1 = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[2]) - glycosidicNitrogenAtom1LocationInGround;
+
+            myResidueNumber = residueNumber1;
+        
+            myResidueNumber.ResidueNumber += stoi(myNTC_PAR_BondRow.atom_shift[2]);
+            
+            Vec3 firstRingAtomvector2 = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[2]) - glycosidicNitrogenAtom2LocationInGround;
+
+            myResidueNumber = residueNumber1;
+        
+            myResidueNumber.ResidueNumber += stoi(myNTC_PAR_BondRow.atom_shift[1]);           
+
+            Vec3 secondRingAtomvector2 = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[1]) - glycosidicNitrogenAtom2LocationInGround;
+
+            myResidueNumber = residueNumber1;
+        
+            myResidueNumber.ResidueNumber += stoi(myNTC_PAR_BondRow.atom_shift[0]);           
+
+            myResidueNumber2 = residueNumber1;
+        
+            myResidueNumber2.ResidueNumber += stoi(myNTC_PAR_BondRow.atom_shift[1]);           
+            
+            ring1CenterLocationInGround = (myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[0])
+                                              +myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chainId1,myResidueNumber2,myNTC_PAR_BondRow.residue1Atom[1]))/2;
+                                              
+            myResidueNumber = residueNumber1;
+        
+            myResidueNumber.ResidueNumber += stoi(myNTC_PAR_BondRow.atom_shift[2]);           
+
+            myResidueNumber2 = residueNumber1;
+        
+            myResidueNumber2.ResidueNumber += stoi(myNTC_PAR_BondRow.atom_shift[3]);                                      
+                                              
+                                              
+            ring2CenterLocationInGround = (myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[2])
+                                              +myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chainId1,myResidueNumber2,myNTC_PAR_BondRow.residue1Atom[3]))/2; 
+                                              
+            xAxisVector1 =  firstRingAtomvector1 - secondRingAtomvector1;
+                                              
+            xAxisVector2 =  firstRingAtomvector2 - secondRingAtomvector2;            
+            
+            zAxisVector1 = (firstRingAtomvector1%secondRingAtomvector1);
+
+            zAxisVector1 = zAxisVector1/zAxisVector1.norm();
+
+            zAxisVector2 = (firstRingAtomvector2%secondRingAtomvector2);
+
+            zAxisVector2 = zAxisVector2/zAxisVector2.norm();
+
+            yAxisVector1 = zAxisVector1%xAxisVector1;
+
+            yAxisVector1= yAxisVector1/yAxisVector1.norm();
+
+            yAxisVector2 = zAxisVector2%xAxisVector2;
+
+            yAxisVector2= yAxisVector2/yAxisVector2.norm();
+            
+       //     cout << xAxisVector1(0) << xAxisVector1(1) << xAxisVector1(2) << endl;
+                                              
+    }; */  
+    
+    void NTC_Torque::calcForce(const State& state, Vector_<SpatialVec>& bodyForces,  
+            Vector_<Vec3>& particleForces, Vector& mobilityForces) const 
+        {  
+        double energy = 0.0;        
+        MobilizedBody body1;
+        MobilizedBody body2;
+        MobilizedBody body3;
+        MobilizedBody body4;
+        Transform transform1;
+        Transform transform2;
+        double forceConstant;
+        double torqueConstant;
+        double dutyCycle; //must be between 0 and 1.  at 1, force is applied all the time.  at 0, basically never applied.    
+        double scrubberPeriod;
+        double cutoffRadius;
+        double PI = 3.14159265359;
+        double pot_angle;
+        double angle;
+        double x_d1,x_d2,x_d3,x_d4;
+        double y_d1,y_d2,y_d3,y_d4;
+        double z_d1,z_d2,z_d3,z_d4;                   
+        double d_d1_x,d_d1_y,d_d1_z;
+        double d_d2_x,d_d2_y,d_d2_z;
+        double d_d3_x,d_d3_y,d_d3_z;
+        double cross_1_x,cross_1_y,cross_1_z;
+        double cross_2_x,cross_2_y,cross_2_z;
+        double d_t,d_t2;
+        double cross_3_x,cross_3_y,cross_3_z;
+        double direction_x,direction_y,direction_z;
+        double rgsq,fg,hg,gaa,gbb,fga,hgb;
+        double dfgx,dfgy,dfgz,dthx,dthy,dthz;
+        double dtfx,dtfy,dtfz;
+        double s_x2,s_y2,s_z2;
+        double force_a1_x,force_a1_y,force_a1_z;
+        double force_a2_x,force_a2_y,force_a2_z;        
+        double force_a3_x,force_a3_y,force_a3_z;
+        double force_a4_x,force_a4_y,force_a4_z;
+        
+        for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) 
+        { 
+        
+            String chainId1=(myParameterReader.ntc_class_container.getNTC_Class(r)).NtC_FirstBPChain;            
+            NTC_PAR_BondRow myNTC_PAR_BondRow = myNTC_PAR_Class.myNTC_PAR_BondMatrix.myNTC_PAR_BondRow[(myParameterReader.ntc_class_container.getNTC_Class(r)).NTC_PAR_BondRowIndex];
+            String basePairIsTwoTransformForce="ntcstep";
+            ResidueID residueNumber1=(myParameterReader.ntc_class_container.getNTC_Class(r)).FirstBPResidue;
+            ResidueID residueNumber2=(myParameterReader.ntc_class_container.getNTC_Class(r)).SecondBPResidue;
+            ResidueID myResidueNumber,myResidueNumber2;
+            
+         //   myResidueNumber = residueNumber1;            
+         //   myResidueNumber.ResidueNumber += stoi(myNTC_PAR_BondRow.atom_shift[0]);             
+             Vec3  state_1;
+        
+            if(stoi(myNTC_PAR_BondRow.atom_shift[0]) == 0) myResidueNumber = residueNumber1;
+            if(stoi(myNTC_PAR_BondRow.atom_shift[0]) == 1) myResidueNumber = residueNumber2;
+            
+            body1 = myBiopolymerClassContainer.updAtomMobilizedBody(matter,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[0]);
+            Vec3 stationA = myBiopolymerClassContainer.getAtomLocationInMobilizedBodyFrame(chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[0]);
+            state_1 = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[0]); 
+            
+            x_d1 = state_1(0);
+            y_d1 = state_1(1);
+            z_d1 = state_1(2);
+            
+        //    cout << x_d1 << " xd1 " << y_d1 << " yd1 " << z_d1 << " zd1 " << "chainID " << chainId1 << "res nr " << myResidueNumber.ResidueNumber << myNTC_PAR_BondRow.residue1Atom[0] << endl;
+            
+            if(stoi(myNTC_PAR_BondRow.atom_shift[1]) == 0) myResidueNumber = residueNumber1;
+            if(stoi(myNTC_PAR_BondRow.atom_shift[1]) == 1) myResidueNumber = residueNumber2;
+            
+            body2 = myBiopolymerClassContainer.updAtomMobilizedBody(matter,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[1]);
+            Vec3 stationB = myBiopolymerClassContainer.getAtomLocationInMobilizedBodyFrame(chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[1]);
+            state_1 = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[1]); 
+            
+            x_d2 = state_1(0);
+            y_d2 = state_1(1);
+            z_d2 = state_1(2);     
+            
+        //    cout << x_d2 << " xd1 " << y_d2 << " yd1 " << z_d2 << " zd1 " << "chainID " << chainId1 << "res nr " << myResidueNumber.ResidueNumber << myNTC_PAR_BondRow.residue1Atom[1] << endl;
+            
+            if(stoi(myNTC_PAR_BondRow.atom_shift[2]) == 0) myResidueNumber = residueNumber1;
+            if(stoi(myNTC_PAR_BondRow.atom_shift[2]) == 1) myResidueNumber = residueNumber2;
+            
+            body3 = myBiopolymerClassContainer.updAtomMobilizedBody(matter,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[2]);
+            Vec3 stationC = myBiopolymerClassContainer.getAtomLocationInMobilizedBodyFrame(chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[2]);
+            state_1 = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[2]); 
+            
+            x_d3 = state_1(0);
+            y_d3 = state_1(1);
+            z_d3 = state_1(2);             
+            
+         //   cout << x_d3 << " xd1 " << y_d3 << " yd1 " << z_d3 << " zd1 " << "chainID " << chainId1 << "res nr " << myResidueNumber.ResidueNumber << myNTC_PAR_BondRow.residue1Atom[2] << endl;
+
+            if(stoi(myNTC_PAR_BondRow.atom_shift[3]) == 0) myResidueNumber = residueNumber1;
+            if(stoi(myNTC_PAR_BondRow.atom_shift[3]) == 1) myResidueNumber = residueNumber2;
+
+            body4 = myBiopolymerClassContainer.updAtomMobilizedBody(matter,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[3]);
+            Vec3 stationD = myBiopolymerClassContainer.getAtomLocationInMobilizedBodyFrame(chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[3]);
+            state_1 = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[3]); 
+            
+            x_d4 = state_1(0);
+            y_d4 = state_1(1);
+            z_d4 = state_1(2);               
+            
+            torqueConstant = myNTC_PAR_BondRow.torqueConstant;            
+         
+       //     torqueConstant = 1.0;
+                        
+          //  Vec3 stationD = myBiopolymerClassContainer.getAtomLocationInMobilizedBodyFrame(chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[3]);        
+          //  MobilizedBody bodyD = myBiopolymerClassContainer.updAtomMobilizedBody(matter,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[3]);
+          //  Vec3 atomDLocationInGround  = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[3]);            
+
+          //  cout << x_d4 << " xd1 " << y_d4 << " yd1 " << z_d4 << " zd1 " << "chainID " << chainId1 << "res nr " << myResidueNumber.ResidueNumber << myNTC_PAR_BondRow.residue1Atom[3] << endl;             
+                       
+            d_d1_x = x_d2 - x_d1;
+            d_d1_y = y_d2 - y_d1;
+            d_d1_z = z_d2 - z_d1;
+        
+            d_d2_x = x_d3 - x_d2;
+            d_d2_y = y_d3 - y_d2;
+            d_d2_z = z_d3 - z_d2;
+
+            d_d3_x = x_d4 - x_d3;
+            d_d3_y = y_d4 - y_d3;
+            d_d3_z = z_d4 - z_d3;
+            
+        cross_1_x = d_d1_y*d_d2_z - d_d1_z*d_d2_y;
+        cross_1_y = d_d1_z*d_d2_x - d_d1_x*d_d2_z;
+        cross_1_z = d_d1_x*d_d2_y - d_d1_y*d_d2_x;
+        
+        cross_2_x = d_d2_y*d_d3_z - d_d2_z*d_d3_y;
+        cross_2_y = d_d2_z*d_d3_x - d_d2_x*d_d3_z;
+        cross_2_z = d_d2_x*d_d3_y - d_d2_y*d_d3_x;
+
+        d_t  = sqrt(pow(cross_1_x,2) + pow(cross_1_y,2) + pow(cross_1_z,2));
+        d_t2 = sqrt(pow(cross_2_x,2) + pow(cross_2_y,2) + pow(cross_2_z,2));
+        
+        cross_1_x /= d_t;
+        cross_1_y /= d_t;
+        cross_1_z /= d_t;
+        
+        cross_2_x /= d_t2;
+        cross_2_y /= d_t2;
+        cross_2_z /= d_t2;        
+        
+        cross_3_x = cross_1_y*cross_2_z - cross_1_z*cross_2_y;
+        cross_3_y = cross_1_z*cross_2_x - cross_1_x*cross_2_z;
+        cross_3_z = cross_1_x*cross_2_y - cross_1_y*cross_2_x;
+        
+        direction_x = cross_3_x*d_d2_x;
+        direction_y = cross_3_y*d_d2_y;
+        direction_z = cross_3_z*d_d2_z;            
+                
+        double scalar_product = ((cross_1_x*cross_2_x+cross_1_y*cross_2_y+cross_1_z*cross_2_z));
+        
+        if(scalar_product > 1.0) scalar_product = 1.0;
+        if(scalar_product < -1.0) scalar_product = -1.0;       
+        
+        angle = acos(scalar_product)*180.0/PI;
+        
+        if(direction_x < 0.0 && direction_y < 0.0 && direction_z < 0.0) {
+            
+          angle = -angle;
+            
+        };          
+            
+        if(angle < 0.0) angle = angle + 360.0;
+        
+      //  cout << chainId1 << "chain ID " << angle << "= angle " << myResidueNumber.ResidueNumber << "= resnr " << myNTC_PAR_BondRow.residue1Atom[0]<< " " << myNTC_PAR_BondRow.residue1Atom[1]<< " " << myNTC_PAR_BondRow.residue1Atom[2]<< " " << myNTC_PAR_BondRow.residue1Atom[3] << "angle_0=" << myNTC_PAR_BondRow.rotationAngle*57.295779513 << endl;
+        
+        angle /= 57.295779513;        
+        
+        pot_angle = (angle - myNTC_PAR_BondRow.rotationAngle)*1.0;
+     
+     rgsq = sqrt(pow(d_d2_x,2)+pow(d_d2_y,2)+pow(d_d2_z,2));
+    
+     if(rgsq > 0.0) {
+     
+        d_d2_x /= rgsq;
+        d_d2_y /= rgsq;
+        d_d2_z /= rgsq;
+     
+        };
+     
+     double l_param = myNTC_PAR_BondRow.CONFALVALUE*57.295779513; // Deg
+     double sigma   = 1.0;
+     
+     double ang_diff = (angle - myNTC_PAR_BondRow.rotationAngle)*57.295779513; // Deg
+     
+//     double dist_ang = ang_diff; // Deg
+
+     // correct if all in Deg
+     double dist_ang = 180.0 - abs(180.0 - abs(ang_diff)); // Deg
+
+     int angle_1 = int(round(angle*57.295779513));
+     int angle_2 = int(round(myNTC_PAR_BondRow.rotationAngle*57.295779513));
+
+     int interval_begin = angle_2;
+     int interval_end   = (interval_begin + 180) % 360;
+
+     if (interval_end > interval_begin) {
+         if (angle_1 < interval_begin || angle_1 > interval_end ) {
+             dist_ang = -dist_ang;
+        }
+     } else {
+         if (angle_1 < interval_begin && angle_1 > interval_end ) {
+             dist_ang = dist_ang;
+        };
+    };
+
+     pot_angle = torqueConstant*(exp(-(pow(dist_ang,2)/(2.0*pow(l_param,2)))))*(dist_ang)/(2.0*pow(l_param,2)); // all Deg
+
+    // pot_angle = torqueConstant * (dist_ang);
+    /* 
+    rgsq = sqrt(d_d2_x*d_d2_x+ d_d2_y*d_d2_y + d_d2_z*d_d2_z); // bond 2 norm
+    fg = d_d1_x*d_d2_x + d_d1_y*d_d2_y + d_d1_z*d_d2_z; // bond 1 dot bond 2
+    hg = d_d3_x*d_d2_x + d_d3_y*d_d2_y + d_d3_z*d_d2_z; // bond 3 dot bond 2
+    
+    d_t =  sqrt(d_d1_x*d_d1_x+ d_d1_y*d_d1_y + d_d1_z*d_d1_z);
+    d_t2 = sqrt(d_d3_x*d_d3_x+ d_d3_y*d_d3_y + d_d3_z*d_d3_z);    
+    
+     fga = fg/(d_t*rgsq);
+     hgb = hg/(d_t2*rgsq);        
+     gaa = - 1.0/d_t*rgsq;
+     gbb = 1.0/d_t2*rgsq;
+        
+     dtfx = gaa*cross_1_x;
+     dtfy = gaa*cross_1_y;
+     dtfz = gaa*cross_1_z;
+        
+     dfgx = fga*cross_1_x - hgb*cross_2_x;
+     dfgy = fga*cross_1_y - hgb*cross_2_y;
+     dfgz = fga*cross_1_z - hgb*cross_2_z;
+        
+     dthx = gbb*cross_2_x;
+     dthy = gbb*cross_2_y;
+     dthz = gbb*cross_2_z;
+
+     s_x2 = dfgx*pot_angle;
+     s_y2 = dfgy*pot_angle;
+     s_z2 = dfgz*pot_angle;
+        
+     force_a1_x = pot_angle*dtfx;
+     force_a1_y = pot_angle*dtfy;
+     force_a1_z = pot_angle*dtfz;
+        
+     force_a2_x = s_x2 - force_a1_x;
+     force_a2_y = s_y2 - force_a1_y;
+     force_a2_z = s_z2 - force_a1_z;
+        
+     force_a4_x = pot_angle*dthx;
+     force_a4_y = pot_angle*dthy;
+     force_a4_z = pot_angle*dthz;
+
+     force_a3_x = -s_x2 - force_a4_x;
+     force_a3_y = -s_y2 - force_a4_y;
+     force_a3_z = -s_z2 - force_a4_z;    */   
+     
+  //   cout << SpatialVec(bodyForces[body1.getMobilizedBodyIndex()]).norm() << " Body 1 abs " << endl;
+
+  //   d_t = sqrt(pow(d_d2_x,2)+pow(d_d2_y,2)+pow(d_d2_z,2));
+     
+  //   torque(0) = d_d2_x/d_t*pot_angle;
+  //   torque(1) = d_d2_y/d_t*pot_angle;
+  //   torque(2) = d_d2_z/d_t*pot_angle;
+     
+   //  bodyForces[body1.getMobilizedBodyIndex()] += SpatialVec(torque,Vec3(0));
+   //  bodyForces[body4.getMobilizedBodyIndex()] -= SpatialVec(torque,Vec3(0));     
+     
+     Vec3 torque;    
+         
+   force_a1_x = cross_1_x*pot_angle;  
+   force_a1_y = cross_1_y*pot_angle;
+   force_a2_z = cross_1_z*pot_angle;
+     
+     torque(0) = force_a1_x;
+     torque(1) = force_a1_y;
+     torque(2) = force_a1_z;
+     
+   if(SpatialVec(torque).norm() > 0.0) {  
+     
+  //   bodyForces[body1.getMobilizedBodyIndex()] = SpatialVec(bodyForces[body1.getMobilizedBodyIndex()])/(1.0+alpha) + alpha*SpatialVec(bodyForces[body1.getMobilizedBodyIndex()]).norm()/SpatialVec(torque).norm()* SpatialVec(torque,Vec3(0));
+     bodyForces[body1.getMobilizedBodyIndex()] += SpatialVec(torque,Vec3(0));
+   }
+     
+  /*   torque(0) = force_a2_x;
+     torque(1) = force_a2_y;
+     torque(2) = force_a2_z;
+    
+   if(SpatialVec(torque).norm() > 0.0) {     
+     
+  //   bodyForces[body2.getMobilizedBodyIndex()] = SpatialVec(bodyForces[body2.getMobilizedBodyIndex()])/(1.0+alpha) + alpha*SpatialVec(bodyForces[body2.getMobilizedBodyIndex()]).norm()/SpatialVec(torque).norm()* SpatialVec(torque,Vec3(0));    
+   //      bodyForces[body2.getMobilizedBodyIndex()] += SpatialVec(torque,Vec3(0)); 
+   };
+     
+     torque(0) = force_a3_x;
+     torque(1) = force_a3_y;
+     torque(2) = force_a3_z;
+     
+   if(SpatialVec(torque).norm() > 0.0) {     
+     
+  //   bodyForces[body3.getMobilizedBodyIndex()] = SpatialVec(bodyForces[body3.getMobilizedBodyIndex()])/(1.0+alpha) + alpha*SpatialVec(bodyForces[body3.getMobilizedBodyIndex()]).norm()/SpatialVec(torque).norm()* SpatialVec(torque,Vec3(0));
+  //   bodyForces[body3.getMobilizedBodyIndex()] += SpatialVec(torque,Vec3(0));
+   };*/
+     
+   force_a4_x = cross_2_x*pot_angle;
+   force_a4_y = cross_2_y*pot_angle;
+   force_a4_z = cross_2_z*pot_angle;
+  
+     torque(0) = force_a4_x;
+     torque(1) = force_a4_y;
+     torque(2) = force_a4_z;
+     
+   if(SpatialVec(torque).norm() > 0.0) {  
+     
+  //   bodyForces[body4.getMobilizedBodyIndex()] = SpatialVec(bodyForces[body4.getMobilizedBodyIndex()])/(1.0+alpha) + alpha*SpatialVec(bodyForces[body4.getMobilizedBodyIndex()]).norm()/SpatialVec(torque).norm()* SpatialVec(torque,Vec3(0));     
+        bodyForces[body4.getMobilizedBodyIndex()] -= SpatialVec(torque,Vec3(0));
+   };
+     
+        
+   //  cout << pot_angle << "  pot angle " << endl;
+     
+     /*   Vec3 torque;
+        
+            d_d1_x = x_d2 - x_d1;
+            d_d1_y = y_d2 - y_d1;
+            d_d1_z = z_d2 - z_d1;
+        
+            d_d2_x = x_d3 - x_d2;
+            d_d2_y = y_d3 - y_d2;
+            d_d2_z = z_d3 - z_d2;
+            
+        cross_1_x = d_d1_y*d_d2_z - d_d1_z*d_d2_y;
+        cross_1_y = d_d1_z*d_d2_x - d_d1_x*d_d2_z;
+        cross_1_z = d_d1_x*d_d2_y - d_d1_y*d_d2_x;
+            
+     d_t = sqrt(pow(cross_1_x,2)+pow(cross_1_y,2)+pow(cross_1_z,2));     
+        
+        torque(0) = cross_1_x/d_t*(pot_angle);
+        torque(1) = cross_1_y/d_t*(pot_angle);
+        torque(2) = cross_1_z/d_t*(pot_angle);
+        
+        bodyForces[body1.getMobilizedBodyIndex()] += SpatialVec(torque,Vec3(0));
+     
+            d_d2_x = x_d3 - x_d2;
+            d_d2_y = y_d3 - y_d2;
+            d_d2_z = z_d3 - z_d2;
+            
+            d_d3_x = x_d4 - x_d3;
+            d_d3_y = y_d4 - y_d3;
+            d_d3_z = z_d4 - z_d3;     
+      
+        cross_2_x = d_d2_y*d_d3_z - d_d2_z*d_d3_y;
+        cross_2_y = d_d2_z*d_d3_x - d_d2_x*d_d3_z;
+        cross_2_z = d_d2_x*d_d3_y - d_d2_y*d_d3_x;         
+     
+     d_t = sqrt(pow(cross_2_x,2)+pow(cross_2_y,2)+pow(cross_2_z,2));      
+     
+        torque(0) = cross_2_x/d_t*(pot_angle);
+        torque(1) = cross_2_y/d_t*(pot_angle);
+        torque(2) = cross_2_z/d_t*(pot_angle); 
+        
+        bodyForces[body4.getMobilizedBodyIndex()] -= SpatialVec(torque,Vec3(0)); */
+        
+    };
+    
+  };
+        
+        
+    Real NTC_Torque::calcPotentialEnergy(const State& state) const { 
+
+        double energy = 0.0;        
+        MobilizedBody body1;
+        MobilizedBody body2;
+        MobilizedBody body3;
+        MobilizedBody body4;
+        Transform transform1;
+        Transform transform2;
+        double forceConstant;
+        double torqueConstant;
+        double dutyCycle; //must be between 0 and 1.  at 1, force is applied all the time.  at 0, basically never applied.    
+        double scrubberPeriod;
+        double cutoffRadius;
+        double PI = 3.14159265359;
+        double pot_angle;
+        double angle;
+        double x_d1,x_d2,x_d3,x_d4;
+        double y_d1,y_d2,y_d3,y_d4;
+        double z_d1,z_d2,z_d3,z_d4;                   
+        double d_d1_x,d_d1_y,d_d1_z;
+        double d_d2_x,d_d2_y,d_d2_z;
+        double d_d3_x,d_d3_y,d_d3_z;
+        double cross_1_x,cross_1_y,cross_1_z;
+        double cross_2_x,cross_2_y,cross_2_z;
+        double d_t,d_t2;
+        double cross_3_x,cross_3_y,cross_3_z;
+        double direction_x,direction_y,direction_z;
+        double rgsq,fg,hg,gaa,gbb,fga,hgb;
+        double dfgx,dfgy,dfgz,dthx,dthy,dthz;
+        double dtfx,dtfy,dtfz;
+        double s_x2,s_y2,s_z2;
+        double force_a1_x,force_a1_y,force_a1_z;
+        double force_a2_x,force_a2_y,force_a2_z;        
+        double force_a3_x,force_a3_y,force_a3_z;
+        double force_a4_x,force_a4_y,force_a4_z;
+        
+        for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) 
+        { 
+	    if (myParameterReader.verbose) cout<<__FILE__<<":"<<__LINE__<<"  doing base pair #"<<r<<endl;	
+        
+            String chainId1=(myParameterReader.ntc_class_container.getNTC_Class(r)).NtC_FirstBPChain;            
+            NTC_PAR_BondRow myNTC_PAR_BondRow = myNTC_PAR_Class.myNTC_PAR_BondMatrix.myNTC_PAR_BondRow[(myParameterReader.ntc_class_container.getNTC_Class(r)).NTC_PAR_BondRowIndex];
+            String basePairIsTwoTransformForce="ntcstep";
+            ResidueID residueNumber1=(myParameterReader.ntc_class_container.getNTC_Class(r)).FirstBPResidue;
+            ResidueID residueNumber2=(myParameterReader.ntc_class_container.getNTC_Class(r)).SecondBPResidue;
+            ResidueID myResidueNumber,myResidueNumber2;
+            
+            Vec3 state_1;
+        
+            if(stoi(myNTC_PAR_BondRow.atom_shift[0]) == 0) myResidueNumber = residueNumber1;
+            if(stoi(myNTC_PAR_BondRow.atom_shift[0]) == 1) myResidueNumber = residueNumber2;
+            
+            body1 = myBiopolymerClassContainer.updAtomMobilizedBody(matter,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[0]);
+            Vec3 stationA = myBiopolymerClassContainer.getAtomLocationInMobilizedBodyFrame(chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[0]);
+            state_1 = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[0]); 
+            
+            x_d1 = state_1(0);
+            y_d1 = state_1(1);
+            z_d1 = state_1(2);
+            
+        //    cout << x_d1 << " xd1 " << y_d1 << " yd1 " << z_d1 << " zd1 " << "chainID " << chainId1 << "res nr " << myResidueNumber.ResidueNumber << myNTC_PAR_BondRow.residue1Atom[0] << endl;
+            
+            if(stoi(myNTC_PAR_BondRow.atom_shift[1]) == 0) myResidueNumber = residueNumber1;
+            if(stoi(myNTC_PAR_BondRow.atom_shift[1]) == 1) myResidueNumber = residueNumber2;
+            
+            body2 = myBiopolymerClassContainer.updAtomMobilizedBody(matter,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[1]);
+            Vec3 stationB = myBiopolymerClassContainer.getAtomLocationInMobilizedBodyFrame(chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[1]);
+            state_1 = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[1]); 
+            
+            x_d2 = state_1(0);
+            y_d2 = state_1(1);
+            z_d2 = state_1(2);     
+            
+        //    cout << x_d2 << " xd1 " << y_d2 << " yd1 " << z_d2 << " zd1 " << "chainID " << chainId1 << "res nr " << myResidueNumber.ResidueNumber << myNTC_PAR_BondRow.residue1Atom[1] << endl;
+            
+            if(stoi(myNTC_PAR_BondRow.atom_shift[2]) == 0) myResidueNumber = residueNumber1;
+            if(stoi(myNTC_PAR_BondRow.atom_shift[2]) == 1) myResidueNumber = residueNumber2;
+            
+            body3 = myBiopolymerClassContainer.updAtomMobilizedBody(matter,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[2]);
+            Vec3 stationC = myBiopolymerClassContainer.getAtomLocationInMobilizedBodyFrame(chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[2]);
+            state_1 = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[2]); 
+            
+            x_d3 = state_1(0);
+            y_d3 = state_1(1);
+            z_d3 = state_1(2);             
+            
+         //   cout << x_d3 << " xd1 " << y_d3 << " yd1 " << z_d3 << " zd1 " << "chainID " << chainId1 << "res nr " << myResidueNumber.ResidueNumber << myNTC_PAR_BondRow.residue1Atom[2] << endl;
+
+            if(stoi(myNTC_PAR_BondRow.atom_shift[3]) == 0) myResidueNumber = residueNumber1;
+            if(stoi(myNTC_PAR_BondRow.atom_shift[3]) == 1) myResidueNumber = residueNumber2;
+
+            body4 = myBiopolymerClassContainer.updAtomMobilizedBody(matter,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[3]);
+            Vec3 stationD = myBiopolymerClassContainer.getAtomLocationInMobilizedBodyFrame(chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[3]);
+            state_1 = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[3]); 
+            
+            x_d4 = state_1(0);
+            y_d4 = state_1(1);
+            z_d4 = state_1(2);               
+            
+       //     torqueConstant = myNTC_PAR_BondRow.torqueConstant;            
+         
+            torqueConstant = 1.0;
+                        
+          //  Vec3 stationD = myBiopolymerClassContainer.getAtomLocationInMobilizedBodyFrame(chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[3]);        
+          //  MobilizedBody bodyD = myBiopolymerClassContainer.updAtomMobilizedBody(matter,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[3]);
+          //  Vec3 atomDLocationInGround  = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chainId1,myResidueNumber,myNTC_PAR_BondRow.residue1Atom[3]);            
+
+          //  cout << x_d4 << " xd1 " << y_d4 << " yd1 " << z_d4 << " zd1 " << "chainID " << chainId1 << "res nr " << myResidueNumber.ResidueNumber << myNTC_PAR_BondRow.residue1Atom[3] << endl;             
+                       
+            d_d1_x = x_d2 - x_d1;
+            d_d1_y = y_d2 - y_d1;
+            d_d1_z = z_d2 - z_d1;
+        
+            d_d2_x = x_d3 - x_d2;
+            d_d2_y = y_d3 - y_d2;
+            d_d2_z = z_d3 - z_d2;
+
+            d_d3_x = x_d4 - x_d3;
+            d_d3_y = y_d4 - y_d3;
+            d_d3_z = z_d4 - z_d3;
+            
+        cross_1_x = d_d1_y*d_d2_z - d_d1_z*d_d2_y;
+        cross_1_y = d_d1_z*d_d2_x - d_d1_x*d_d2_z;
+        cross_1_z = d_d1_x*d_d2_y - d_d1_y*d_d2_x;
+        
+        cross_2_x = d_d2_y*d_d3_z - d_d2_z*d_d3_y;
+        cross_2_y = d_d2_z*d_d3_x - d_d2_x*d_d3_z;
+        cross_2_z = d_d2_x*d_d3_y - d_d2_y*d_d3_x;
+
+        d_t  = sqrt(pow(cross_1_x,2) + pow(cross_1_y,2) + pow(cross_1_z,2));
+        d_t2 = sqrt(pow(cross_2_x,2) + pow(cross_2_y,2) + pow(cross_2_z,2));
+        
+        cross_1_x /= d_t;
+        cross_1_y /= d_t;
+        cross_1_z /= d_t;
+        
+        cross_2_x /= d_t2;
+        cross_2_y /= d_t2;
+        cross_2_z /= d_t2;        
+        
+        cross_3_x = cross_1_y*cross_2_z - cross_1_z*cross_2_y;
+        cross_3_y = cross_1_z*cross_2_x - cross_1_x*cross_2_z;
+        cross_3_z = cross_1_x*cross_2_y - cross_1_y*cross_2_x;
+        
+        direction_x = cross_3_x*d_d2_x;
+        direction_y = cross_3_y*d_d2_y;
+        direction_z = cross_3_z*d_d2_z;            
+                
+        double scalar_product = ((cross_1_x*cross_2_x+cross_1_y*cross_2_y+cross_1_z*cross_2_z));
+        
+        if(scalar_product > 1.0) scalar_product = 1.0;
+        if(scalar_product < -1.0) scalar_product = -1.0;       
+        
+        angle = acos(scalar_product)*180.0/PI;
+        
+        if(direction_x < 0.0 && direction_y < 0.0 && direction_z < 0.0) {
+            
+          angle = -angle;
+            
+        };          
+            
+        if(angle < 0.0) angle = angle + 360.0;
+        
+      //  cout << chainId1 << "chain ID " << angle << "= angle " << myResidueNumber.ResidueNumber << "= resnr " << myNTC_PAR_BondRow.residue1Atom[0]<< " " << myNTC_PAR_BondRow.residue1Atom[1]<< " " << myNTC_PAR_BondRow.residue1Atom[2]<< " " << myNTC_PAR_BondRow.residue1Atom[3] << "angle_0=" << myNTC_PAR_BondRow.rotationAngle*57.295779513 << endl;
+        
+        angle /= 57.295779513;        
+        
+        pot_angle = (angle - myNTC_PAR_BondRow.rotationAngle)*1.0;
+     
+     rgsq = sqrt(pow(d_d2_x,2)+pow(d_d2_y,2)+pow(d_d2_z,2));
+    
+     if(rgsq > 0.0) {
+     
+        d_d2_x /= rgsq;
+        d_d2_y /= rgsq;
+        d_d2_z /= rgsq;
+     
+        };
+     
+     double l_param = myNTC_PAR_BondRow.CONFALVALUE*57.295779513; //Deg
+     double sigma   = 1.0;
+     
+     double ang_diff = (angle - myNTC_PAR_BondRow.rotationAngle)*57.295779513; //Deg
+     
+//     double dist_ang = ang_diff; // Deg
+     
+     // correct if all in Deg
+     double dist_ang = 180.0 - abs(180.0 - abs(ang_diff)); // Deg
+     
+     int angle_1 = int(round(angle*57.295779513));
+     int angle_2 = int(round(myNTC_PAR_BondRow.rotationAngle*57.295779513));
+     
+     int interval_begin = angle_2;
+     int interval_end   = (interval_begin + 180) % 360;
+     
+     if (interval_end > interval_begin) {
+         if (angle_1 < interval_begin || angle_1 > interval_end ) {
+             dist_ang = -dist_ang;
+        }
+     } else {
+         if (angle_1 < interval_begin && angle_1 > interval_end ) {
+             dist_ang = dist_ang;
+        };
+    };
+        
+        energy += torqueConstant*((exp(-(pow(dist_ang,2)/(2.0*pow(l_param,2)))))); // all Deg
+        
+            cout << " NTC sampling - CHAIN ID = " << chainId1 << ", residuenumber " << myResidueNumber.ResidueNumber  << " difference-angle = "<< dist_ang << " , CONFALVALUE = " << myNTC_PAR_BondRow.CONFALVALUE << " , " << angle*57.295779513 << " = angle at time t for atoms  = " << myNTC_PAR_BondRow.residue1Atom[0] << " , " << myNTC_PAR_BondRow.residue1Atom[1] << " , " << myNTC_PAR_BondRow.residue1Atom[2] << " , " << myNTC_PAR_BondRow.residue1Atom[3] << " , "<< myNTC_PAR_BondRow.rotationAngle*57.295779513 << " = angle_0 from  input , " << "energy = " << energy << endl;
+        
+       };
+                
+       return energy;   
+          
+    };
+    bool NTC_Torque::dependsOnlyOnPositions() const  { 
+        return true; 
+    };    

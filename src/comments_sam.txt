@@ -1,0 +1,615 @@
+
+
+ 
+
+cp BaseInteractionParameterReader.cpp NtCParameterReader.cpp 
+
+ 
+
+In  NtCParameterReader.cpp :
+
+ 
+
+     70             if ((String(s)).compare("RECORD") == 0)  { //if this is a RECORD entry
+
+ 
+
+Becomes:
+
+     70             if ((String(s)).compare("NtC-RECORD") == 0)  { //if this is an NtC RECORD entry
+
+ 
+
+In Utils.h :
+
+ 
+
+ 
+
+struct ParameterRow   {
+
+        String pdbResidueName1;
+
+        String bondingEdge1; // For an NtC, this would be the class
+
+        #String pdbResidueName2;
+
+        String bondingEdge2; // For an NtC, this would be the bond name
+
+        #String glycosidicBondOrientation;
+
+ 
+
+        #String residue1Atom[4];
+
+        #String residue2Atom[4];
+
+        #double  bondLength[4];
+
+        #double  springConstant[4];
+
+        double torqueConstant;
+
+        #Vec3   attachmentPoint;
+
+        double  rotationAngle;
+
+        #Vec3   rotationAxis;
+
+        #String isTwoTransformForce;
+
+        #double distanceC1pC1p;
+
+};
+
+ 
+
+In NtCParameterReader.h :
+
+ 
+
+Pair string, int atomNameAndResidueOffsetPair;
+
+/* For example, one could have 
+
+C3'    0
+
+O3'     0
+
+P        1
+
+O5'    1
+
+*/
+
+ParameterRow NtCParameterRow {
+
+        atomNameAndResidueOffsetPair fourAtoms[4];
+
+        // By convention, equal and opposite torques are applied to atoms 1 and 2 (in this case O3' and P) and not to atoms 0 and 3. Follow the usual chemical convention to define dihedral angle between atoms 1 and 2 based on the positions of atoms 0 and 3.
+
+}
+
+ 
+
+In BaseInteractionParameterReader.h :
+
+ 
+
+ 36 ParameterRow NTC_PAR_BondRow   {
+
+ 37         #String pdbResidueName1;
+
+ 38         #String bondingEdge1;
+
+ 39         String pdbResidueName2;
+
+ 40         String bondingEdge2;
+
+ 41         String glycosidicBondOrientation;
+
+ 42         String residue1Atom[4];
+
+ 43         String residue2Atom[4];
+
+ 44         double  bondLength[4];
+
+ 45         double  springConstant[4];
+
+ 46         #double torqueConstant;
+
+ 47         Vec3   attachmentPoint;
+
+ 48         #double  rotationAngle;
+
+ 49         Vec3   rotationAxis;
+
+ 50         String isTwoTransformForce;
+
+ 51         double distanceC1pC1p;
+
+ 52 };
+
+ 
+
+ 
+
+cp BiopolymerClassTwoTransformForces.cpp NtCForces.cpp 
+
+cp BiopolymerClassTwoTransformForces.h NtCForces.h
+
+In NtCForces.h :
+
+inline std::ostream& operator<<(std::ostream& o, const ParameterReader&) {
+
+    assert(false);
+
+    return o;
+
+};
+
+ 
+
+ 
+
+class NtCTorque : public Force::Custom::Implementation {
+
+ 
+
+private:
+
+    SimbodyMatterSubsystem& matter;
+
+    ParameterReader& myParameterReader;
+
+    NtCParameterClass& myNtCParameterClass;
+
+    BiopolymerClassContainer & myBiopolymerClassContainer;
+
+    Biopolymer * myChain;
+
+    mutable int parameterReaderIndex;
+
+    std::ostream& outputStream;
+
+public:
+
+ 
+
+    void calcForce(const State& state, Vector_<SpatialVec>& bodyForces,
+
+            Vector_<Vec3>& particleForces, Vector& mobilityForces) const ;
+
+    Real calcPotentialEnergy(const State& state) const;
+
+    bool dependsOnlyOnPositions() const;
+
+};
+
+ 
+
+In  NtCForces.cpp :
+
+ 
+
+ 
+
+    NtCTorque::NtCTorque (SimbodyMatterSubsystem& matter,ParameterReader& myParameterReader,  NTC_PAR_Class& myNTC_PAR_Class, BiopolymerClassContainer & myBiopolymerClassContainer, std::ostream& outputStream ) : matter(matter),myParameterReader(myParameterReader), myNTC_PAR_Class (myNTC_PAR_Class), myBiopolymerClassContainer(myBiopolymerClassContainer), outputStream(outputStream)
+
+        {
+
+    };   
+
+    void         NtCTorque::calcAxes (const State& state,NTC_PAR_BondRow myNTC_PAR_BondRow,ResidueID residueNumber1,ResidueID residueNumber2,String chain1,String chain2,Vec3 & xAxisVector1,Vec3 & yAxisVector1, Vec3 & zAxisVector1,Vec3 & xAxisVector2,Vec3 & yAxisVector2 , Vec3 & zAxisVector2,Vec3 & glycosidicNitrogenAtom1LocationInGround,Vec3 & glycosidicNitrogenAtom2LocationInGround, Vec3 & ring1CenterLocationInGround, Vec3 & ring2CenterLocationInGround) const {
+
+ 
+
+            glycosidicNitrogenAtom1LocationInGround = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chain1, residueNumber1,myNTC_PAR_BondRow.residue1Atom[0]);
+
+            glycosidicNitrogenAtom2LocationInGround = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chain2, residueNumber2,myNTC_PAR_BondRow.residue2Atom[0]);
+
+            Vec3 firstRingAtomvector1 = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chain1,residueNumber1,myNTC_PAR_BondRow.residue1Atom[1])  - glycosidicNitrogenAtom1LocationInGround;
+
+            Vec3 secondRingAtomvector1 = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chain1,residueNumber1,myNTC_PAR_BondRow.residue1Atom[2])  - glycosidicNitrogenAtom1LocationInGround;
+
+            Vec3 firstRingAtomvector2 = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chain2,residueNumber2,myNTC_PAR_BondRow.residue2Atom[1])  - glycosidicNitrogenAtom2LocationInGround;
+
+            //Vec3 firstRingAtomvector2 = myBiopolymerClass[j].calcAtomLocationInGroundFrame(state,myBiopolymerClass[j].getAtomIndex(ss2first.str()))  -glycosidicNitrogenAtom2LocationInGround;// myBiopolymerClass[j].calcAtomLocationInGroundFrame(state,myBiopolymerClass[j].getAtomIndex(ss4.str()));
+
+            Vec3 secondRingAtomvector2 = myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chain2,residueNumber2,myNTC_PAR_BondRow.residue2Atom[2])  - glycosidicNitrogenAtom2LocationInGround;
+
+            //Vec3 secondRingAtomvector2 = myBiopolymerClass[j].calcAtomLocationInGroundFrame(state,myBiopolymerClass[j].getAtomIndex(ss2second.str()))  - glycosidicNitrogenAtom2LocationInGround;//myBiopolymerClass[j].calcAtomLocationInGroundFrame(state,myBiopolymerClass[j].getAtomIndex(ss4.str()));
+
+            if ((myNTC_PAR_BondRow.pdbResidueName1.compare("A  ") == 0) || (myNTC_PAR_BondRow.pdbResidueName1.compare("G  ") == 0) ) { //if purine
+
+ 
+
+                xAxisVector1 =  -5.88327 * firstRingAtomvector1 - 6.13617 * secondRingAtomvector1;         
+
+                ring1CenterLocationInGround = (myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chain1,residueNumber1,String("N3"))
+
+                                              +myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chain1,residueNumber1,String("C6")))/2;
+
+            }
+
+            else if ((myNTC_PAR_BondRow.pdbResidueName1.compare("C  ") == 0)) {
+
+                xAxisVector1 = -7.83435 * firstRingAtomvector1 -6.99265          *secondRingAtomvector1;          
+
+                ring1CenterLocationInGround = (myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chain1,residueNumber1,String("N1"))
+
+                                              +myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chain1,residueNumber1,String("C4")))/2;
+
+            }
+
+            else if ((myNTC_PAR_BondRow.pdbResidueName1.compare("U  ")) == 0) {
+
+                xAxisVector1 = -7.3491 * firstRingAtomvector1 -6.47606 *secondRingAtomvector1;    
+
+                ring1CenterLocationInGround = (myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chain1,residueNumber1,String("N1"))
+
+                                              +myBiopolymerClassContainer.calcAtomLocationInGroundFrame(state,chain1,residueNumber1,String("C4")))/2;
+
+            }
+
+            else { cout <<__FILE__<<":"<<__LINE__<<"  Unrecognized residue type"<<endl; assert(0);} // trap errors
+
+ 
+
+  
+
+            else { cout <<__FILE__<<":"<<__LINE__<<"  Unrecognized residue type"<<endl; assert(0);} // trap errors
+
+            zAxisVector1 = (firstRingAtomvector1%secondRingAtomvector1);
+
+            zAxisVector1 = zAxisVector1/zAxisVector1.norm();
+
+            zAxisVector2 = (firstRingAtomvector2%secondRingAtomvector2);
+
+            zAxisVector2 = zAxisVector2/zAxisVector2.norm();
+
+            yAxisVector1 = zAxisVector1%xAxisVector1;
+
+            yAxisVector1= yAxisVector1/yAxisVector1.norm();
+
+            yAxisVector2 = zAxisVector2%xAxisVector2;
+
+            yAxisVector2= yAxisVector2/yAxisVector2.norm();
+
+ 
+
+    };
+
+ 
+
+    void NtCTorque::calcForce(const State& state, Vector_<SpatialVec>& bodyForces, 
+
+            Vector_<Vec3>& particleForces, Vector& mobilityForces) const
+
+        { 
+
+        MobilizedBody body1;
+
+        MobilizedBody body2;
+
+ 
+
+        double torqueConstant;
+
+        for (int r=0;r<myParameterReader.ntCContainer.numBasePairs();r++)
+
+        {
+
+    if (myParameterReader.verbose) cout<<__FILE__<<":"<<__LINE__<<"  doing base pair #"<<r<<endl;
+
+            String chainId1=(myParameterReader.ntCContainer.getBasePair(r)).FirstBPChain;           
+
+            String ntCClass=(myParameterReader.ntCContainer.getBasePair(r)).FirstBPEdge;
+
+            String bond=(myParameterReader.ntCContainer.getBasePair(r)).SecondBPEdge;
+
+ 
+
+            ResidueID residueNumber=(myParameterReader.ntCContainer.getBasePair(r).FirstBPResidue);
+
+            //ResidueID residueNumber2=(myParameterReader.ntCContainer.getBasePair(r).SecondBPResidue );
+
+            NTC_PAR_BondRow myNTC_PAR_BondRow = myNTC_PAR_Class.myNTC_PAR_BondMatrix.myNTC_PAR_BondRow[(myParameterReader.basePairContainer.getBasePair(r)).NTC_PAR_BondRowIndex];
+
+           
+
+            body1 = myBiopolymerClassContainer.updAtomMobilizedBody(matter,chainId1,residueNumber1,myNTC_PAR_BondRow.residue1Atom[0]);
+
+            body2 = myBiopolymerClassContainer.updAtomMobilizedBody(matter,chainId2,residueNumber2,myNTC_PAR_BondRow.residue2Atom[0]);
+
+         
+
+            Rotation rotation1 = Rotation(myNTC_PAR_BondRow.rotationAngle,myNTC_PAR_BondRow.rotationAxis);
+
+    torqueConstant = myNTC_PAR_BondRow.torqueConstant;
+
+            {
+
+            Vec3 xAxisVector1 ;
+
+    Vec3 yAxisVector1;
+
+    Vec3 zAxisVector1;
+
+     Vec3 xAxisVector2;
+
+     Vec3 yAxisVector2;
+
+      Vec3 zAxisVector2;
+
+            Vec3 glycosidicNitrogenAtom1LocationInGround;
+
+            Vec3 glycosidicNitrogenAtom2LocationInGround;
+
+            Vec3 ring1CenterLocationInGround;
+
+            Vec3 ring2CenterLocationInGround;
+
+ 
+
+   
+
+            myX_GB1 =  matter.getMobilizedBody(body1).getBodyTransform(state);
+
+            myX_GB2 =  matter.getMobilizedBody(body2).getBodyTransform(state);
+
+     
+
+            myX_GB1 = Transform(~(myParameterReader.basePairContainer.getBasePair(r).rotationCorrection1*~myX_GB1.R()),myX_GB1.R()*myParameterReader.basePairContainer.getBasePair(r).translationCorrection1+myX_GB1.T());
+
+            myX_GB2 = Transform(~(myParameterReader.basePairContainer.getBasePair(r).rotationCorrection2*~myX_GB2.R()),myX_GB2.R()*myParameterReader.basePairContainer.getBasePair(r).translationCorrection2+myX_GB2.T());
+
+            //}
+
+            const Transform X_GB1 = myX_GB1;
+
+            const Transform X_GB2 = myX_GB2;
+
+           
+
+ 
+
+            const Vec3 s1_G = X_GB1.R() * station1;
+
+            const Vec3 s2_G = X_GB2.R() * station2;
+
+            const Rotation rot1_G = X_GB1.R() * rotation1;
+
+            const Rotation rot2_G = X_GB2.R() * rotation2;
+
+            const Vec3 p1_G = X_GB1.T() + s1_G; // station measured from ground origin
+
+            const Vec3 p2_G = X_GB2.T() + s2_G;
+
+ 
+
+            const Vec3 r_G = p2_G - p1_G; // vector from point1 to point2
+
+            const Real d   = r_G.norm();  // distance between the points
+
+            if (myParameterReader.verbose) cout<<__FILE__<<":"<<__LINE__<<" : d         = "<<d        <<endl;
+
+            Real  stretch   = d ; //d - x0; // + -> tension, - -> compression
+
+    const Vec4 rotationAngleAxis = (rot1_G*(~rot2_G)).convertRotationToAngleAxis();
+
+ 
+
+            Vec3 torque;
+
+ 
+
+            double A, B, C;
+
+            for (int i = 0; i<3; i++) torque[i] = rotationAngleAxis[i+1];
+
+ 
+
+ 
+
+            double theta = rotationAngleAxis[0];
+
+            torque *= -theta * torqueConstant ;
+
+ 
+
+ 
+
+                torque      *= myParameterReader.twoTransformForceMultiplier;
+
+ 
+
+    if (myParameterReader.verbose) {cout<<__FILE__<<":"<<__LINE__<<"  torque on body 1 ="<<torque + s1_G % f1_G<<endl;}
+
+    if (myParameterReader.verbose) {cout<<__FILE__<<":"<<__LINE__<<"  torque on body 2 ="<<-torque - s2_G % f1_G<<endl;}
+
+            bodyForces[body1.getMobilizedBodyIndex()] +=  SpatialVec(torque + (-(matter.getMobilizedBody(body1).getBodyTransform(state)).T()+p1_G) % f1_G, f1_G);
+
+            bodyForces[body2.getMobilizedBodyIndex()] -=  SpatialVec(torque + (-(matter.getMobilizedBody(body2).getBodyTransform(state)).T()+p2_G) % f1_G, f1_G);
+
+            }
+
+        }
+
+        };
+
+    Real AllTwoTransformLinearSprings::calcPotentialEnergy(const State& state) const {
+
+        double energy = 0.0;
+
+  
+
+        MobilizedBody body1;
+
+        MobilizedBody body2;
+
+     
+
+        double torqueConstant;
+
+            
+
+        if (myParameterReader.verbose) cout<< __FILE__<<":"<<__LINE__  <<" energy before calcPotentialEnergy  :: "<< std::setiosflags(std::ios::fixed) << std::setprecision(1) << energy    <<","<<endl;
+
+        for (int r=0;r<myParameterReader.ntCContainer.numBasePairs();r++)
+
+        //if (( (myParameterReader.basePairContainer.getBasePair(r)).BasePairIsTwoTransformForce.compare("baseInteraction") ==0) ||
+
+        {
+
+ 
+
+            String chainId1=(myParameterReader.basePairContainer.getBasePair(r)).FirstBPChain;           
+
+            String ntCClass=(myParameterReader.basePairContainer.getBasePair(r)).FirstBPEdge;
+
+            String bond=(myParameterReader.basePairContainer.getBasePair(r)).SecondBPEdge;
+
+ 
+
+            ResidueID residueNumber1=(myParameterReader.ntCContainer.getBasePair(r)).FirstBPResidue;
+
+            NTC_PAR_BondRow myNTC_PAR_BondRow = myNTC_PAR_Class.getNTC_PAR_BondRow((myParameterReader.basePairContainer.getBasePair(r)).FirstBPResidue ,(myParameterReader.basePairContainer.getBasePair(r)).SecondBPResidue,myPdbResidueName1,bondingEdge1,myPdbResidueName2,bondingEdge2,glycosidicBondOrientation,  basePairIsTwoTransformForce);
+
+ 
+
+            body1 = myBiopolymerClassContainer.updAtomMobilizedBody(matter,chainId1,residueNumber1,myNTC_PAR_BondRow.residue1Atom[0]);
+
+            body2 = myBiopolymerClassContainer.updAtomMobilizedBody(matter,chainId2,residueNumber2,myNTC_PAR_BondRow.residue2Atom[0]);
+
+            Vec3 station2 = myBiopolymerClassContainer.getAtomLocationInMobilizedBodyFrame(chainId2, residueNumber2,myNTC_PAR_BondRow.residue2Atom[0]);//myBiopolymerClass[j].getAtomLocationInMobilizedBodyFrame(myBiopolymerClass[j].getAtomIndex(ss4.str()));
+
+            Rotation rotation1 = Rotation(myLeontisWesthofBondRow.rotationAngle,myLeontisWesthofBondRow.rotationAxis);
+
+            Rotation rotation2;
+
+            rotation2.setRotationToIdentityMatrix();
+
+    torqueConstant = myLeontisWesthofBondRow.torqueConstant;
+
+    dutyCycle = myParameterReader.dutyCycle;
+
+    transform1 = Transform(rotation1, station1);   
+
+            transform2 = Transform(rotation2, station2);   
+
+ 
+
+ 
+
+            {
+
+ 
+
+ 
+
+            Vec3 xAxisVector1 ;
+
+    Vec3 yAxisVector1;
+
+    Vec3 zAxisVector1;
+
+     Vec3 xAxisVector2;
+
+     Vec3 yAxisVector2;
+
+      Vec3 zAxisVector2;
+
+            Vec3 glycosidicNitrogenAtom1LocationInGround;
+
+            Vec3 glycosidicNitrogenAtom2LocationInGround;
+
+            Vec3 ring1CenterLocationInGround;
+
+            Vec3 ring2CenterLocationInGround;
+
+ 
+
+            Transform myX_GB1;
+
+            Transform myX_GB2;
+
+            //{
+
+                //new method that uses pre-computed corrections for topology
+
+            myX_GB1 =  matter.getMobilizedBody(body1).getBodyTransform(state);
+
+            myX_GB2 =  matter.getMobilizedBody(body2).getBodyTransform(state);
+
+            myX_GB1 = Transform(myParameterReader.basePairContainer.getBasePair(r).rotationCorrection1*myX_GB1.R(),myX_GB1.R()*myParameterReader.basePairContainer.getBasePair(r).translationCorrection1+myX_GB1.T());
+
+            myX_GB2 = Transform(myParameterReader.basePairContainer.getBasePair(r).rotationCorrection2*myX_GB2.R(),myX_GB2.R()*myParameterReader.basePairContainer.getBasePair(r).translationCorrection2+myX_GB2.T());
+
+            //}
+
+            const Transform X_GB1 = myX_GB1;
+
+            const Transform X_GB2 = myX_GB2;
+
+ 
+
+            const Vec3 s1_G = X_GB1.R() * station1;
+
+            const Vec3 s2_G = X_GB2.R() * station2;
+
+            const Vec3 p1_G = X_GB1.T() + s1_G; // station measured from ground origin
+
+            const Vec3 p2_G = X_GB2.T() + s2_G;
+
+            const Vec3 r_G = p2_G - p1_G; // vector from point1 to point2
+
+            if (myParameterReader.verbose) cout<< __FILE__<<":"<<__LINE__  <<" r_G.norm(): "<<r_G.norm()<<","<<endl;
+
+ 
+
+            if (myParameterReader.verbose) cout<< __FILE__<<":"<<__LINE__  <<" energy   :: "<<energy    <<","<<endl;
+
+ 
+
+ 
+
+            }
+
+ 
+
+// torsional part
+
+ 
+
+             energy += 0.5*((rotationAngleAxis[0]*rotationAngleAxis[0]-180*180/Rad2Deg/Rad2Deg)*torqueConstant)*myParameterReader.twoTransformForceMultiplier;
+
+  
+
+         
+
+                }
+
+            }   
+
+        }
+
+           
+
+        return energy;
+
+    };
+
+    bool AllTwoTransformLinearSprings::dependsOnlyOnPositions() const  {
+
+        return true;
+
+    };  
+
+ 
+
+ 
+
+ 
+
+ 
