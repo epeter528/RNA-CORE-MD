@@ -395,8 +395,13 @@ public :
     double  av_d[125];
     
     int  counter_meta[125];     
-    double  counter_threebody[125];     
-    double  counter_twobody[125];   
+    double  counter_threebody_x[125];
+    double  counter_threebody_y[125];
+    double  counter_threebody_z[125];    
+    double  counter_twobody_x[125];   
+    double  counter_twobody_y[125]; 
+    double  counter_twobody_z[125];
+    
     double  counter_gen[125]; 
     double  av_d12_x[125];
     double  av_d12_y[125];
@@ -501,9 +506,12 @@ public :
     double  d_23_last_y[125];
     double  d_23_last_z[125]; 
     
-    double  d_12_delta_x[125];
-    double  d_12_delta_y[125];
-    double  d_12_delta_z[125];  
+    double  delta_x12[125];
+    double  delta_y12[125];
+    double  delta_z12[125];
+    double  delta_x12b[125];
+    double  delta_y12b[125];
+    double  delta_z12b[125];   
     double  d_12b_delta_x[125];
     double  d_12b_delta_y[125];
     double  d_12b_delta_z[125];      
@@ -528,6 +536,14 @@ public :
     double  stamp_d12b_y[125];
     double  stamp_d12b_z[125];  
     
+    double  tau_1_x[125];
+    double  tau_1_y[125];    
+    double  tau_1_z[125];
+    
+    double  tau_2_x[125];
+    double  tau_2_y[125];    
+    double  tau_2_z[125];    
+    
     double  weight_12_2body_x[125];
     double  weight_12_2body_y[125];
     double  weight_12_2body_z[125];   
@@ -543,57 +559,28 @@ public :
     double  **alpha_2_y_threebody;
     double  **alpha_2_z_threebody;
     
-    double  beta_2_x_twobody[125][101];
-    double  beta_2_y_twobody[125][101];
-    double  beta_2_z_twobody[125][101];
-
-    double  beta_2_x_threebody[125][101];
-    double  beta_2_y_threebody[125][101];
-    double  beta_2_z_threebody[125][101]; 
+    double  beta_2_x_twobody[125];
+    double  beta_2_y_twobody[125];
+    double  beta_2_z_twobody[125];
     
-    double  alpha_2_x_twobody_last[125][101];
-    double  alpha_2_y_twobody_last[125][101];
-    double  alpha_2_z_twobody_last[125][101];
-
-    double  alpha_2_x_threebody_last[125][101];
-    double  alpha_2_y_threebody_last[125][101];
-    double  alpha_2_z_threebody_last[125][101];
+    double  dt_12[125],dt_13[125],dt_23[125];  
+    double  dt_12b[125];
     
-    double  bias_x_twobody_last[125];
-    double  bias_y_twobody_last[125];
-    double  bias_z_twobody_last[125];
-
-    double  bias_x_threebody_last[125];
-    double  bias_y_threebody_last[125];
-    double  bias_z_threebody_last[125];  
+    double  beta_2_x_threebody[125];
+    double  beta_2_y_threebody[125];
+    double  beta_2_z_threebody[125];
     
-    double  alpha_2_x_twobody_last_2[125][101];
-    double  alpha_2_y_twobody_last_2[125][101];
-    double  alpha_2_z_twobody_last_2[125][101];
+    double  beta_2_x_twobody_last[125];
+    double  beta_2_y_twobody_last[125];
+    double  beta_2_z_twobody_last[125];
 
-    double  alpha_2_x_threebody_last_2[125][101];
-    double  alpha_2_y_threebody_last_2[125][101];
-    double  alpha_2_z_threebody_last_2[125][101];
-    
-    double  beta_2_x_twobody_last_2[125][101];
-    double  beta_2_y_twobody_last_2[125][101];
-    double  beta_2_z_twobody_last_2[125][101];
-
-    double  beta_2_x_threebody_last_2[125][101];
-    double  beta_2_y_threebody_last_2[125][101];
-    double  beta_2_z_threebody_last_2[125][101];      
+    double  beta_2_x_threebody_last[125];
+    double  beta_2_y_threebody_last[125];
+    double  beta_2_z_threebody_last[125];     
 
     double  l_twobody_x[125][101];
     double  l_twobody_y[125][101];
     double  l_twobody_z[125][101];    
-    
-    double  l_min_x_twobody[125];
-    double  l_min_y_twobody[125];
-    double  l_min_z_twobody[125];
-    
-    double  l_min_x_threebody[125];
-    double  l_min_y_threebody[125];
-    double  l_min_z_threebody[125];    
     
     double  l_threebody_x[125][101];
     double  l_threebody_y[125][101];
@@ -620,7 +607,48 @@ public :
     double  hist_global_12_2body_z[125][101];    
     double  hist_global_12_3body_x[125][101];    
     double  hist_global_12_3body_y[125][101];    
-    double  hist_global_12_3body_z[125][101];    
+    double  hist_global_12_3body_z[125][101]; 
+    
+    double  hist_global_12_2body_x_last[125];    
+    double  hist_global_12_2body_y_last[125];    
+    double  hist_global_12_2body_z_last[125];    
+    double  hist_global_12_3body_x_last[125];    
+    double  hist_global_12_3body_y_last[125];    
+    double  hist_global_12_3body_z_last[125];     
+    
+    double  probability_x3_twobody[125][101];
+    double  probability_y3_twobody[125][101];
+    double  probability_z3_twobody[125][101];    
+    
+    double  probability_x3_threebody[125][101];
+    double  probability_y3_threebody[125][101];
+    double  probability_z3_threebody[125][101];        
+    
+    double  bias_2body_norm[125];
+    double  bias_3body_norm[125];    
+    
+    double  bias_2body_x[125];
+    double  bias_2body_y[125];    
+    double  bias_2body_z[125];
+    
+    double  bias_3body_x[125];
+    double  bias_3body_y[125];    
+    double  bias_3body_z[125];  
+    
+    double  f_bias_2body_x[125];
+    double  f_bias_2body_y[125];    
+    double  f_bias_2body_z[125];
+    
+    double  f_bias_3body_x[125];
+    double  f_bias_3body_y[125];    
+    double  f_bias_3body_z[125];     
+    
+    double  cos_body_1[125];
+    double  count_body_1[125];    
+    double  cos_body_2[125];
+    double  count_body_2[125];  
+    double  cos_body_3[125];
+    double  count_body_3[125];      
     
     int meas_12_2body_x[125];
     int meas_12_2body_y[125];
@@ -628,6 +656,13 @@ public :
     int meas_12_3body_x[125];
     int meas_12_3body_y[125];
     int meas_12_3body_z[125];          
+    
+    int meas_12_2body_x_last[125];
+    int meas_12_2body_y_last[125];
+    int meas_12_2body_z_last[125];     
+    int meas_12_3body_x_last[125];
+    int meas_12_3body_y_last[125];
+    int meas_12_3body_z_last[125];     
     
     int     count = 0;
     int     count2 = 0;

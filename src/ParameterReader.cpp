@@ -1871,10 +1871,7 @@ void ParameterReader::parameterStringInterpreter(const ParameterStringClass & pa
             NTC.sec_res_threebody = myBiopolymerClassContainer.residueID(userVariables,parameterStringClass.getString(8).c_str(), NTC.sec_res_chain_threebody); 
             NTC.third_res_chain_threebody     = (parameterStringClass.getString(9)); 
             NTC.third_res_threebody = myBiopolymerClassContainer.residueID(userVariables,parameterStringClass.getString(10).c_str(), NTC.third_res_chain_threebody);
-            NTC.tau                 = stod(parameterStringClass.getString(11));
-            NTC.tau_2               = stoi(parameterStringClass.getString(12));
-            NTC.alpha               = stod(parameterStringClass.getString(13)); 
-            NTC.beta                = stod(parameterStringClass.getString(14)); 
+            NTC.alpha               = stod(parameterStringClass.getString(11)); 
             
             NTC.count = myBiopolymerClassContainer.count2;
             
@@ -1889,10 +1886,7 @@ void ParameterReader::parameterStringInterpreter(const ParameterStringClass & pa
             NTC.twobody = 1;
             NTC.sec_res_chain_twobody = (parameterStringClass.getString(7));
             NTC.sec_res_twobody = myBiopolymerClassContainer.residueID(userVariables,parameterStringClass.getString(8).c_str(), NTC.sec_res_chain_twobody);                         
-            NTC.tau                 = stod(parameterStringClass.getString(9)); 
-            NTC.tau_2               = stoi(parameterStringClass.getString(10));
-            NTC.alpha               = stod(parameterStringClass.getString(11));
-            NTC.beta                = stod(parameterStringClass.getString(12));
+            NTC.alpha               = stod(parameterStringClass.getString(9));
     
             NTC.count = myBiopolymerClassContainer.count3;
             
