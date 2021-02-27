@@ -88,7 +88,7 @@
         double b_norm,t_norm,dot_AB,cosgamma=0.0;
         
         double sam_x,sam_y,sam_z;
-
+        
         AtomSpringContainer atomSpringContainer;
         
         ran44 = rand()%200/200.0;
@@ -203,6 +203,9 @@
                      bodyForces[body1.getMobilizedBodyIndex()][0][1]*(torque[1]) +
                      bodyForces[body1.getMobilizedBodyIndex()][0][2]*(torque[2]))/(virgin1*estranged);
          
+     myBiopolymerClassContainer.l_max_tt[0] += cosgamma;
+      myBiopolymerClassContainer.counter_l_max_tt[0] += 1.0;                     
+                     
          torque[0] *= cosgamma;
          torque[1] *= cosgamma;         
          torque[2] *= cosgamma;
@@ -219,6 +222,9 @@
                      bodyForces[body2.getMobilizedBodyIndex()][0][1]*(torque[1]) +
                      bodyForces[body2.getMobilizedBodyIndex()][0][2]*(torque[2]))/(virgin2*estranged);         
          
+     myBiopolymerClassContainer.l_max_tt[0] += cosgamma;
+      myBiopolymerClassContainer.counter_l_max_tt[0] += 1.0;                     
+                     
          torque[0] *= cosgamma;
          torque[1] *= cosgamma;         
          torque[2] *= cosgamma;                     
@@ -235,6 +241,9 @@
                      bodyForces[body3.getMobilizedBodyIndex()][0][1]*(torque[1]) +
                      bodyForces[body3.getMobilizedBodyIndex()][0][2]*(torque[2]))/(virgin3*estranged);         
         
+     myBiopolymerClassContainer.l_max_tt[0] += cosgamma;
+      myBiopolymerClassContainer.counter_l_max_tt[0] += 1.0;                     
+                     
          torque[0] *= cosgamma;
          torque[1] *= cosgamma;         
          torque[2] *= cosgamma;                       
@@ -251,6 +260,9 @@
                      bodyForces[body4.getMobilizedBodyIndex()][0][1]*(torque[1]) +
                      bodyForces[body4.getMobilizedBodyIndex()][0][2]*(torque[2]))/(virgin4*estranged);          
          
+     myBiopolymerClassContainer.l_max_tt[0] += cosgamma;
+      myBiopolymerClassContainer.counter_l_max_tt[0] += 1.0;                     
+                     
          torque[0] *= cosgamma;
          torque[1] *= cosgamma;         
          torque[2] *= cosgamma;                      
@@ -466,8 +478,11 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
       
     }  
     
-   if( myBiopolymerClassContainer.counter_gen[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] == 1.0) {
+   if( myBiopolymerClassContainer.counter_gen[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] == 1.0  || 
+       myBiopolymerClassContainer.reset_3body[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] == 1) {
     
+    myBiopolymerClassContainer.reset_3body[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0;    
+       
     myBiopolymerClassContainer.tau_2_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 1000.0;
     myBiopolymerClassContainer.tau_2_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 1000.0;
     myBiopolymerClassContainer.tau_2_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 1000.0; 
@@ -476,10 +491,44 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
     myBiopolymerClassContainer.tau_1_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 1000.0;
     myBiopolymerClassContainer.tau_1_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 1000.0; 
     
-    myBiopolymerClassContainer.bias_2body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
-    myBiopolymerClassContainer.bias_2body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;    
-    myBiopolymerClassContainer.bias_2body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
-    
+     myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = myBiopolymerClassContainer.dL_angle1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
+     /myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];     
+   
+    myBiopolymerClassContainer.bias_3body_x_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] =
+    (myBiopolymerClassContainer.dL12_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
+     /myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
+     *myBiopolymerClassContainer.dL13_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
+     /myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
+     *myBiopolymerClassContainer.dL23_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
+     /myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count])
+     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
+                
+    myBiopolymerClassContainer.bias_3body_y_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] =
+         (myBiopolymerClassContainer.dL12_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
+     /myBiopolymerClassContainer.counter_threebody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
+     *myBiopolymerClassContainer.dL13_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
+     /myBiopolymerClassContainer.counter_threebody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
+     *myBiopolymerClassContainer.dL23_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
+     /myBiopolymerClassContainer.counter_threebody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count])
+     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
+
+    myBiopolymerClassContainer.bias_3body_z_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] =
+         (myBiopolymerClassContainer.dL12_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
+     /myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
+     *myBiopolymerClassContainer.dL13_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
+     /myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
+     *myBiopolymerClassContainer.dL23_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
+     /myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count])
+     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];               
+                
+    if(myBiopolymerClassContainer.counter_gen[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] == 1.0) {
+               
+       myBiopolymerClassContainer.bias_3body_x_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 1.0;
+       myBiopolymerClassContainer.bias_3body_y_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 1.0;    
+       myBiopolymerClassContainer.bias_3body_z_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 1.0;                  
+                 
+    };     
+   
     myBiopolymerClassContainer.bias_3body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
     myBiopolymerClassContainer.bias_3body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;    
     myBiopolymerClassContainer.bias_3body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;    
@@ -487,6 +536,59 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
     myBiopolymerClassContainer.bias_2body_norm[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
     
     myBiopolymerClassContainer.bias_3body_norm[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;  
+    
+    myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0;
+    myBiopolymerClassContainer.counter_threebody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0;    
+    myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0;
+    
+    myBiopolymerClassContainer.av_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
+    
+    myBiopolymerClassContainer.dL_angle1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
+    
+    myBiopolymerClassContainer.av_d12_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
+    myBiopolymerClassContainer.av_d12_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;    
+    myBiopolymerClassContainer.av_d12_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
+
+    myBiopolymerClassContainer.dL12_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
+    myBiopolymerClassContainer.dL12_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;    
+    myBiopolymerClassContainer.dL12_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;    
+    
+    myBiopolymerClassContainer.av_d13_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
+    myBiopolymerClassContainer.av_d13_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;    
+    myBiopolymerClassContainer.av_d13_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
+
+    myBiopolymerClassContainer.dL13_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
+    myBiopolymerClassContainer.dL13_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;    
+    myBiopolymerClassContainer.dL13_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;      
+
+    myBiopolymerClassContainer.av_d23_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
+    myBiopolymerClassContainer.av_d23_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;    
+    myBiopolymerClassContainer.av_d23_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
+
+    myBiopolymerClassContainer.dL23_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
+    myBiopolymerClassContainer.dL23_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;    
+    myBiopolymerClassContainer.dL23_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;      
+    
+   for(k=1;k<=100;k++) {        
+     
+       myBiopolymerClassContainer.hist_global_12_3body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;
+       myBiopolymerClassContainer.hist_global_12_3body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;       
+       myBiopolymerClassContainer.hist_global_12_3body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;
+       
+       myBiopolymerClassContainer.probability_x3_threebody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;
+       myBiopolymerClassContainer.probability_y3_threebody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;       
+       myBiopolymerClassContainer.probability_z3_threebody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;       
+       
+       myBiopolymerClassContainer.weight_12_3body_x[k] = 0.0;
+       myBiopolymerClassContainer.weight_12_3body_y[k] = 0.0;       
+       myBiopolymerClassContainer.weight_12_3body_z[k] = 0.0;
+       
+       myBiopolymerClassContainer.alpha_2_x_threebody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;
+       myBiopolymerClassContainer.alpha_2_y_threebody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;                         
+       myBiopolymerClassContainer.alpha_2_z_threebody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;
+                         
+       
+      };     
     
     p_3body_x = 1.0;
     p_3body_y = 1.0;
@@ -753,6 +855,16 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 	     };        
      };
 
+     d_x  = 0.0;     
+     d_x2 = 0.0;
+     d_x3 = 0.0;
+     d_y  = 0.0;     
+     d_y2 = 0.0;
+     d_y3 = 0.0;     
+     d_z  = 0.0;     
+     d_z2 = 0.0;
+     d_z3 = 0.0;          
+     
      double Corr_func_12_x=0.0;
      if((
 			     sqrt(pow(myBiopolymerClassContainer.stamp_d12_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
@@ -763,7 +875,7 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 
      {
 
-	     myBiopolymerClassContainer.dL12_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] += (myBiopolymerClassContainer.stamp_d12_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
+         d_x = (myBiopolymerClassContainer.stamp_d12_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 			     myBiopolymerClassContainer.av_d12_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
 			     /myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]    
 			     )*(myBiopolymerClassContainer.diff_x12[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] - myBiopolymerClassContainer.av_d12_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -774,6 +886,8 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 						       /myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2))    
 				       *sqrt(pow(myBiopolymerClassContainer.diff_x12[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 						       myBiopolymerClassContainer.av_d12_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]/myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2)));
+         
+	     myBiopolymerClassContainer.dL12_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] += d_x;
 
      };
 
@@ -787,7 +901,7 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 
      {
 
-	     myBiopolymerClassContainer.dL12_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] += (myBiopolymerClassContainer.stamp_d12_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
+         d_y = (myBiopolymerClassContainer.stamp_d12_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 			     myBiopolymerClassContainer.av_d12_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
 			     /myBiopolymerClassContainer.counter_threebody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]    
 			     )*(myBiopolymerClassContainer.diff_y12[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] - myBiopolymerClassContainer.av_d12_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -798,6 +912,8 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 						       /myBiopolymerClassContainer.counter_threebody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2))    
 				       *sqrt(pow(myBiopolymerClassContainer.diff_y12[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 						       myBiopolymerClassContainer.av_d12_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]/myBiopolymerClassContainer.counter_threebody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2)));
+         
+	     myBiopolymerClassContainer.dL12_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] += d_y;
 
      };
 
@@ -811,7 +927,7 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 
      {
 
-	     myBiopolymerClassContainer.dL12_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] += (myBiopolymerClassContainer.stamp_d12_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
+         d_z = (myBiopolymerClassContainer.stamp_d12_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 			     myBiopolymerClassContainer.av_d12_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
 			     /myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]    
 			     )*(myBiopolymerClassContainer.diff_z12[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] - myBiopolymerClassContainer.av_d12_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -821,7 +937,9 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 						       myBiopolymerClassContainer.av_d12_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
 						       /myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2))    
 				       *sqrt(pow(myBiopolymerClassContainer.diff_z12[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
-						       myBiopolymerClassContainer.av_d12_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]/myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2))); 
+						       myBiopolymerClassContainer.av_d12_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]/myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2)));
+         
+	     myBiopolymerClassContainer.dL12_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] += d_z; 
 
      };
 
@@ -845,7 +963,7 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 
      {
 
-	     myBiopolymerClassContainer.dL13_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] += (myBiopolymerClassContainer.stamp_d13_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
+         d_x2 = (myBiopolymerClassContainer.stamp_d13_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 			     myBiopolymerClassContainer.av_d13_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
 			     /myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]    
 			     )*(myBiopolymerClassContainer.diff_x13[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] - myBiopolymerClassContainer.av_d13_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -856,6 +974,8 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 						       /myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2))    
 				       *sqrt(pow(myBiopolymerClassContainer.diff_x13[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 						       myBiopolymerClassContainer.av_d13_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]/myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2)));
+         
+	     myBiopolymerClassContainer.dL13_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] += d_x2;
 
      };
 
@@ -869,7 +989,7 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 
      {
 
-	     myBiopolymerClassContainer.dL13_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] += (myBiopolymerClassContainer.stamp_d13_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
+         d_y2 = (myBiopolymerClassContainer.stamp_d13_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 			     myBiopolymerClassContainer.av_d13_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
 			     /myBiopolymerClassContainer.counter_threebody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]    
 			     )*(myBiopolymerClassContainer.diff_y13[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] - myBiopolymerClassContainer.av_d13_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -880,6 +1000,8 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 						       /myBiopolymerClassContainer.counter_threebody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2))    
 				       *sqrt(pow(myBiopolymerClassContainer.diff_y13[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 						       myBiopolymerClassContainer.av_d13_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]/myBiopolymerClassContainer.counter_threebody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2)));
+         
+	     myBiopolymerClassContainer.dL13_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] += d_y2;
 
      };
 
@@ -893,7 +1015,7 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 
      {
 
-	     myBiopolymerClassContainer.dL13_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] += (myBiopolymerClassContainer.stamp_d13_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
+         d_z2 = (myBiopolymerClassContainer.stamp_d13_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 			     myBiopolymerClassContainer.av_d13_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
 			     /myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]    
 			     )*(myBiopolymerClassContainer.diff_z13[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] - myBiopolymerClassContainer.av_d13_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -904,6 +1026,8 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 						       /myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2))    
 				       *sqrt(pow(myBiopolymerClassContainer.diff_z13[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 						       myBiopolymerClassContainer.av_d13_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]/myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2))); 
+         
+	     myBiopolymerClassContainer.dL13_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] += d_z2;
 
      };
 
@@ -933,7 +1057,7 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 
      {
 
-	     myBiopolymerClassContainer.dL23_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] += (myBiopolymerClassContainer.stamp_d23_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
+         d_x3 = (myBiopolymerClassContainer.stamp_d23_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 			     myBiopolymerClassContainer.av_d23_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
 			     /myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]    
 			     )*(myBiopolymerClassContainer.diff_x23[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] - myBiopolymerClassContainer.av_d23_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -944,6 +1068,8 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 						       /myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2))    
 				       *sqrt(pow(myBiopolymerClassContainer.diff_x23[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 						       myBiopolymerClassContainer.av_d23_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]/myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2)));
+         
+	     myBiopolymerClassContainer.dL23_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] += d_x3;
 
      };
 
@@ -957,7 +1083,7 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 
      {
 
-	     myBiopolymerClassContainer.dL23_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] += (myBiopolymerClassContainer.stamp_d23_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
+         d_y3 = (myBiopolymerClassContainer.stamp_d23_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 			     myBiopolymerClassContainer.av_d23_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
 			     /myBiopolymerClassContainer.counter_threebody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]    
 			     )*(myBiopolymerClassContainer.diff_y23[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] - myBiopolymerClassContainer.av_d23_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -968,6 +1094,8 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 						       /myBiopolymerClassContainer.counter_threebody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2))    
 				       *sqrt(pow(myBiopolymerClassContainer.diff_y23[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 						       myBiopolymerClassContainer.av_d23_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]/myBiopolymerClassContainer.counter_threebody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2)));
+         
+	     myBiopolymerClassContainer.dL23_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] += d_y3;
 
      };
 
@@ -981,7 +1109,7 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 
      {
 
-	     myBiopolymerClassContainer.dL23_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] += (myBiopolymerClassContainer.stamp_d23_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
+         d_z3 = (myBiopolymerClassContainer.stamp_d23_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 			     myBiopolymerClassContainer.av_d23_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
 			     /myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]    
 			     )*(myBiopolymerClassContainer.diff_z23[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] - myBiopolymerClassContainer.av_d23_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -991,7 +1119,9 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 						       myBiopolymerClassContainer.av_d23_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
 						       /myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2))    
 				       *sqrt(pow(myBiopolymerClassContainer.diff_z23[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
-						       myBiopolymerClassContainer.av_d23_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]/myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2)));  
+						       myBiopolymerClassContainer.av_d23_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]/myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2)));
+         
+	     myBiopolymerClassContainer.dL23_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] += d_z3;  
 
       }
      };
@@ -1082,59 +1212,74 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 
 			  }
 
-			  if(myBiopolymerClassContainer.counter_gen[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] == 1.0 && r22==0) {
-
-				  myBiopolymerClassContainer.alpha_2_x_twobody = (double **) malloc(sizeof(double)*126);
-
-				  for(k=0;k<=125;k++) {
-
-					  myBiopolymerClassContainer.alpha_2_x_twobody[k] = (double *) malloc(sizeof(double)*1001); 
-
-				  };
-
-				  myBiopolymerClassContainer.alpha_2_y_twobody = (double **) malloc(sizeof(double)*126);
-
-				  for(k=0;k<=125;k++) {
-
-					  myBiopolymerClassContainer.alpha_2_y_twobody[k] = (double *) malloc(sizeof(double)*1001); 
-
-				  };       
-
-				  myBiopolymerClassContainer.alpha_2_z_twobody = (double **) malloc(sizeof(double)*126);
-
-				  for(k=0;k<=125;k++) {
-
-					  myBiopolymerClassContainer.alpha_2_z_twobody[k] = (double *) malloc(sizeof(double)*1001); 
-
-				  };       
-
-				  myBiopolymerClassContainer.alpha_2_x_threebody = (double **) malloc(sizeof(double)*126);
-
-				  for(k=0;k<=125;k++) {
-
-					  myBiopolymerClassContainer.alpha_2_x_threebody[k] = (double *) malloc(sizeof(double)*1001); 
-
-				  };
-
-				  myBiopolymerClassContainer.alpha_2_y_threebody = (double **) malloc(sizeof(double)*126);
-
-				  for(k=0;k<=125;k++) {
-
-					  myBiopolymerClassContainer.alpha_2_y_threebody[k] = (double *) malloc(sizeof(double)*1001); 
-
-				  };       
-
-				  myBiopolymerClassContainer.alpha_2_z_threebody = (double **) malloc(sizeof(double)*126);
-
-				  for(k=0;k<=125;k++) {
-
-					  myBiopolymerClassContainer.alpha_2_z_threebody[k] = (double *) malloc(sizeof(double)*1001); 
-
-				  };    
-
-			  };
-
 			  r22 ++;
+              
+              if(myBiopolymerClassContainer.counter_gen[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] == 1.0 || 
+                 myBiopolymerClassContainer.reset_2body[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] == 1) {
+                 
+                myBiopolymerClassContainer.reset_2body[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0;  
+                  
+                for(k=1;i<=100;i++) {
+                
+                    myBiopolymerClassContainer.alpha_2_x_twobody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;
+                    myBiopolymerClassContainer.alpha_2_y_twobody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;                         
+                    myBiopolymerClassContainer.alpha_2_z_twobody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;
+                         
+                };
+                   
+                myBiopolymerClassContainer.bias_2body_x_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] =
+                myBiopolymerClassContainer.dL12b_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
+                /myBiopolymerClassContainer.counter_twobody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
+                
+                myBiopolymerClassContainer.bias_2body_y_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] =
+                myBiopolymerClassContainer.dL12b_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
+                /myBiopolymerClassContainer.counter_twobody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
+
+                myBiopolymerClassContainer.bias_2body_z_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] =
+                myBiopolymerClassContainer.dL12b_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
+                /myBiopolymerClassContainer.counter_twobody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];               
+              
+                myBiopolymerClassContainer.dL12b_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
+                myBiopolymerClassContainer.dL12b_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;                
+                myBiopolymerClassContainer.dL12b_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
+                
+                myBiopolymerClassContainer.av_d12b_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
+                myBiopolymerClassContainer.av_d12b_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;                
+                myBiopolymerClassContainer.av_d12b_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
+
+                myBiopolymerClassContainer.counter_twobody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 1.0;
+                myBiopolymerClassContainer.counter_twobody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 1.0;                
+                myBiopolymerClassContainer.counter_twobody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 1.0;
+                
+             if(myBiopolymerClassContainer.counter_gen[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] == 1.0) {
+               
+                myBiopolymerClassContainer.bias_2body_x_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 1.0;
+                myBiopolymerClassContainer.bias_2body_y_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 1.0;    
+                myBiopolymerClassContainer.bias_2body_z_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 1.0;                  
+                 
+             };   
+                
+                myBiopolymerClassContainer.bias_2body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
+                myBiopolymerClassContainer.bias_2body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;    
+                myBiopolymerClassContainer.bias_2body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;                
+                
+          for(k=1;k<=100;k++) {
+         
+                myBiopolymerClassContainer.hist_global_12_2body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;
+                myBiopolymerClassContainer.hist_global_12_2body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;
+                myBiopolymerClassContainer.hist_global_12_2body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;
+          
+                myBiopolymerClassContainer.probability_x3_twobody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;
+                myBiopolymerClassContainer.probability_y3_twobody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;       
+                myBiopolymerClassContainer.probability_z3_twobody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;           
+          
+                myBiopolymerClassContainer.weight_12_2body_x[k] = 0.0;
+                myBiopolymerClassContainer.weight_12_2body_y[k] = 0.0;          
+                myBiopolymerClassContainer.weight_12_2body_z[k] = 0.0;
+                 
+          
+                };               
+              };
 
 			  myBiopolymerClassContainer.diff_x12b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = (d12[0]);
 			  myBiopolymerClassContainer.diff_y12b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = (d12[1]); 
@@ -1197,6 +1342,10 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 
 			  double Corr_func_12b_x = 0.0;
 
+              d_x = 0.0;
+              d_y = 0.0;
+              d_z = 0.0;
+              
 			  if((
 						  sqrt(pow(myBiopolymerClassContainer.stamp_d12b_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 								  myBiopolymerClassContainer.av_d12b_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -1206,8 +1355,7 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 
 			  {
 
-				  myBiopolymerClassContainer.dL12b_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]   
-					  += (myBiopolymerClassContainer.stamp_d12b_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
+                  d_x = (myBiopolymerClassContainer.stamp_d12b_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 							  myBiopolymerClassContainer.av_d12b_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
 							  /myBiopolymerClassContainer.counter_twobody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]    
 					     )*(myBiopolymerClassContainer.diff_x12b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] - myBiopolymerClassContainer.av_d12b_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -1218,6 +1366,9 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 								       /myBiopolymerClassContainer.counter_twobody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2))    
 						       *sqrt(pow(myBiopolymerClassContainer.diff_x12b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 								       myBiopolymerClassContainer.av_d12b_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]/myBiopolymerClassContainer.counter_twobody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2)));
+                  
+				  myBiopolymerClassContainer.dL12b_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]   
+					  += d_x;
 
 
 			  };
@@ -1233,8 +1384,7 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 
 			  {
 
-				  myBiopolymerClassContainer.dL12b_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]   
-					  += (myBiopolymerClassContainer.stamp_d12b_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
+                  d_y = (myBiopolymerClassContainer.stamp_d12b_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 							  myBiopolymerClassContainer.av_d12b_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
 							  /myBiopolymerClassContainer.counter_twobody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]    
 					     )*(myBiopolymerClassContainer.diff_y12b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] - myBiopolymerClassContainer.av_d12b_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -1245,6 +1395,9 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 								       /myBiopolymerClassContainer.counter_twobody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2))    
 						       *sqrt(pow(myBiopolymerClassContainer.diff_y12b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 								       myBiopolymerClassContainer.av_d12b_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]/myBiopolymerClassContainer.counter_twobody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2)));
+                  
+				  myBiopolymerClassContainer.dL12b_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]   
+					  += d_y;
 
 			  };
 
@@ -1259,8 +1412,7 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 
 			  {
 
-				  myBiopolymerClassContainer.dL12b_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]   
-					  += (myBiopolymerClassContainer.stamp_d12b_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
+                  d_z = (myBiopolymerClassContainer.stamp_d12b_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
 							  myBiopolymerClassContainer.av_d12b_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
 							  /myBiopolymerClassContainer.counter_twobody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]    
 					     )*(myBiopolymerClassContainer.diff_z12b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] - myBiopolymerClassContainer.av_d12b_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -1270,10 +1422,13 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
 								       myBiopolymerClassContainer.av_d12b_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
 								       /myBiopolymerClassContainer.counter_twobody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2))    
 						       *sqrt(pow(myBiopolymerClassContainer.diff_z12b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] -
-								       myBiopolymerClassContainer.av_d12b_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]/myBiopolymerClassContainer.counter_twobody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2))); 
+								       myBiopolymerClassContainer.av_d12b_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]/myBiopolymerClassContainer.counter_twobody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count],2)));
+                  
+				  myBiopolymerClassContainer.dL12b_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]   
+					  += d_z; 
 
 			  };
-            }
+            };
 		  };
 	  };
 	  };
@@ -1348,7 +1503,8 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
      /myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      *myBiopolymerClassContainer.dL23_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      /myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count])
-     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];     
+     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_3body_x_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];     
      
      myBiopolymerClassContainer.bias_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]  = 
      (myBiopolymerClassContainer.dL12_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -1357,7 +1513,8 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
      /myBiopolymerClassContainer.counter_threebody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      *myBiopolymerClassContainer.dL23_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      /myBiopolymerClassContainer.counter_threebody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count])
-     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
+     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_3body_y_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
      
      myBiopolymerClassContainer.bias_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]  = 
      (myBiopolymerClassContainer.dL12_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -1366,7 +1523,8 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
      /myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      *myBiopolymerClassContainer.dL23_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      /myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count])
-     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]; 
+     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_3body_z_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]; 
       
       double d_b1_x, d_b1_y, d_b1_z,d_b2_x,d_b2_y,d_b2_z,d_b3_x,d_b3_y,d_b3_z;
            
@@ -1374,35 +1532,22 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
       d_t_13 = d13.norm();
       d_t_23 = d23.norm();
    
+      
      if((int)myBiopolymerClassContainer.counter_gen[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]%
         (int)myBiopolymerClassContainer.tau_1_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] == 0) { 
-             
       
       range_x = -1.0;
       range_y = -1.0;
       range_z = -1.0;
       
   for(k=1;k<=100;k++) {    
- 
-   if((int)myBiopolymerClassContainer.counter_gen[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]     == 1
-     ) {        
-     
-       myBiopolymerClassContainer.hist_global_12_3body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;
-       myBiopolymerClassContainer.hist_global_12_3body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;       
-       myBiopolymerClassContainer.hist_global_12_3body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;
-       
-       myBiopolymerClassContainer.probability_x3_threebody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;
-       myBiopolymerClassContainer.probability_y3_threebody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;       
-       myBiopolymerClassContainer.probability_z3_threebody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;       
-       
-       myBiopolymerClassContainer.weight_12_3body_x[k] = 0.0;
-       myBiopolymerClassContainer.weight_12_3body_y[k] = 0.0;       
-       myBiopolymerClassContainer.weight_12_3body_z[k] = 0.0;
-       
-      }; 
       
  //    if((int)myBiopolymerClassContainer.counter_gen[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]%
  //       (int)myBiopolymerClassContainer.tau_1_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] == 0) {  
+      
+        p_3body_x = 0.0;
+        p_3body_y = 0.0;
+        p_3body_z = 0.0;
       
         myBiopolymerClassContainer.hist_global_12_3body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] +=
         exp(-pow(myBiopolymerClassContainer.bias_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] - range_x,2)/0.02);          
@@ -1467,7 +1612,19 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
             }; 
         };     
      
-  //   }     
+  //   }    
+        
+         ran = rand()%100/100.0;
+        
+         if(ran < (p_3body_x + p_3body_y + p_3body_z)/3.0) {
+              
+                   myBiopolymerClassContainer.reset_3body[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 1;
+                  
+              } else {
+                
+                   myBiopolymerClassContainer.reset_3body[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0;
+                  
+         };        
        
         if(sqrt(pow(myBiopolymerClassContainer.bias_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] - range_x,2)) < 0.02) {
             myBiopolymerClassContainer.meas_12_3body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = k;         
@@ -1634,40 +1791,30 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
    
       
      myBiopolymerClassContainer.bias_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]  = myBiopolymerClassContainer.dL12b_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
-     /myBiopolymerClassContainer.counter_twobody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
+     /myBiopolymerClassContainer.counter_twobody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_2body_x_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
      myBiopolymerClassContainer.bias_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]  = myBiopolymerClassContainer.dL12b_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
-     /myBiopolymerClassContainer.counter_twobody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
+     /myBiopolymerClassContainer.counter_twobody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_2body_y_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
      myBiopolymerClassContainer.bias_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]  = myBiopolymerClassContainer.dL12b_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
-     /myBiopolymerClassContainer.counter_twobody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];      
+     /myBiopolymerClassContainer.counter_twobody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_2body_z_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];      
      
       double d_b1_x, d_b1_y, d_b1_z,d_b2_x,d_b2_y,d_b2_z,d_b3_x,d_b3_y,d_b3_z;
      
       d_t_12 = d12.norm();
-       
-    if( (int)myBiopolymerClassContainer.counter_gen[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]%(int)myBiopolymerClassContainer.tau_1_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] == 0) {   
       
+    if( (int)myBiopolymerClassContainer.counter_gen[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]%(int)myBiopolymerClassContainer.tau_1_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] == 0) {   
+        
       range_x = -1.0;
       range_y = -1.0;
       range_z = -1.0;
       
       for(k=1;k<=100;k++) {
-      
-       if((int)myBiopolymerClassContainer.counter_gen[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]     == 1) {
-         
-          myBiopolymerClassContainer.hist_global_12_2body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;
-          myBiopolymerClassContainer.hist_global_12_2body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;
-          myBiopolymerClassContainer.hist_global_12_2body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;
           
-          myBiopolymerClassContainer.probability_x3_twobody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;
-          myBiopolymerClassContainer.probability_y3_twobody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;       
-          myBiopolymerClassContainer.probability_z3_twobody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;           
-          
-          myBiopolymerClassContainer.weight_12_2body_x[k] = 0.0;
-          myBiopolymerClassContainer.weight_12_2body_y[k] = 0.0;          
-          myBiopolymerClassContainer.weight_12_2body_z[k] = 0.0;
-                 
-          
-       };
+        p_2body_x = 0.0;
+        p_2body_y = 0.0;
+        p_2body_z = 0.0;
      
  //    if((int)myBiopolymerClassContainer.counter_gen[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]%
  //       (int)myBiopolymerClassContainer.tau_2_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] == 0) {  
@@ -1736,6 +1883,18 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
             }; 
         };       
      
+         ran = rand()%100/100.0;
+        
+         if(ran < (p_2body_x + p_2body_y + p_2body_z)/3.0) {
+              
+                   myBiopolymerClassContainer.reset_2body[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 1;
+                  
+              } else {
+                
+                   myBiopolymerClassContainer.reset_2body[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0;
+                  
+         };          
+        
    //  }        
       
         if(sqrt(pow(myBiopolymerClassContainer.bias_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] - range_x,2)) < 0.02) {
@@ -1849,38 +2008,6 @@ double delta_l, delta_b, delta_l2, delta_b2;
 
 for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) { 
 
-     
-   if((myParameterReader.ntc_class_container.getNTC_Class(r)).threebody == 1 && 
-         (int)myBiopolymerClassContainer.counter_gen[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] == 1) {
-        
-    for(k = 1; k <= 100; k++) {      
-         
-       myBiopolymerClassContainer.beta_2_x_threebody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
-       myBiopolymerClassContainer.beta_2_y_threebody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
-       myBiopolymerClassContainer.beta_2_z_threebody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
-   
-       myBiopolymerClassContainer.alpha_2_x_threebody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;  
-       myBiopolymerClassContainer.alpha_2_y_threebody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;   
-       myBiopolymerClassContainer.alpha_2_z_threebody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0; 
-      
-       };
-     };
-     
-     if((myParameterReader.ntc_class_container.getNTC_Class(r)).twobody == 1 && 
-         (int)myBiopolymerClassContainer.counter_gen[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] == 1) {     
-     
-    for(k = 1; k <= 100; k++) {         
-         
-       myBiopolymerClassContainer.beta_2_x_twobody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
-       myBiopolymerClassContainer.beta_2_y_twobody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
-       myBiopolymerClassContainer.beta_2_z_twobody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
-   
-       myBiopolymerClassContainer.alpha_2_x_twobody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;  
-       myBiopolymerClassContainer.alpha_2_y_twobody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;   
-       myBiopolymerClassContainer.alpha_2_z_twobody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][k] = 0.0;   
-        
-    };
-   };
           
    if((myParameterReader.ntc_class_container.getNTC_Class(r)).threebody == 1) {
 
@@ -1894,7 +2021,8 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
      /myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      *myBiopolymerClassContainer.dL23_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      /myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count])
-     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];     
+     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_3body_x_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];     
      
      myBiopolymerClassContainer.bias_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]  = 
      (myBiopolymerClassContainer.dL12_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -1903,7 +2031,8 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
      /myBiopolymerClassContainer.counter_threebody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      *myBiopolymerClassContainer.dL23_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      /myBiopolymerClassContainer.counter_threebody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count])
-     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
+     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_3body_y_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
      
      myBiopolymerClassContainer.bias_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]  = 
      (myBiopolymerClassContainer.dL12_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -1912,18 +2041,22 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
      /myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      *myBiopolymerClassContainer.dL23_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      /myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count])
-     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]; 
+     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_3body_z_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]; 
      
    };   
     
    if((myParameterReader.ntc_class_container.getNTC_Class(r)).twobody == 1) {
 
      myBiopolymerClassContainer.bias_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]  = myBiopolymerClassContainer.dL12b_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
-     /myBiopolymerClassContainer.counter_twobody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
+     /myBiopolymerClassContainer.counter_twobody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_2body_x_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
      myBiopolymerClassContainer.bias_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]  = myBiopolymerClassContainer.dL12b_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
-     /myBiopolymerClassContainer.counter_twobody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
+     /myBiopolymerClassContainer.counter_twobody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_2body_y_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
      myBiopolymerClassContainer.bias_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]  = myBiopolymerClassContainer.dL12b_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
-     /myBiopolymerClassContainer.counter_twobody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];      
+     /myBiopolymerClassContainer.counter_twobody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_2body_z_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];      
      
   };    
 };
@@ -1983,6 +2116,10 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
       
  // 12
  
+  myBiopolymerClassContainer.h_div_w_3body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
+  myBiopolymerClassContainer.h_div_w_3body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;  
+  myBiopolymerClassContainer.h_div_w_3body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0; 
+ 
  if(all_refs_true == 3) {
  
      myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = myBiopolymerClassContainer.dL_angle1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -1995,7 +2132,8 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
      /myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      *myBiopolymerClassContainer.dL23_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      /myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count])
-     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];     
+     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_3body_x_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];     
      
      myBiopolymerClassContainer.bias_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]  = 
      (myBiopolymerClassContainer.dL12_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -2004,7 +2142,8 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
      /myBiopolymerClassContainer.counter_threebody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      *myBiopolymerClassContainer.dL23_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      /myBiopolymerClassContainer.counter_threebody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count])
-     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
+     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_3body_y_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
      
      myBiopolymerClassContainer.bias_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]  = 
      (myBiopolymerClassContainer.dL12_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -2013,7 +2152,8 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
      /myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      *myBiopolymerClassContainer.dL23_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      /myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count])
-     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];  
+     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_3body_z_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];  
       
  if(myBiopolymerClassContainer.meas_12_3body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] > 1 &&
     myBiopolymerClassContainer.meas_12_3body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] <= 100 &&
@@ -2041,6 +2181,13 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
            myBiopolymerClassContainer.weight_12_3body_x[myBiopolymerClassContainer.meas_12_3body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]]
                     ))/p_3body_x) - myBiopolymerClassContainer.hist_global_12_3body_x_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]);
        
+       myBiopolymerClassContainer.h_div_w_3body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = myBiopolymerClassContainer.hist_global_12_3body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][myBiopolymerClassContainer.meas_12_3body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]]/
+           myBiopolymerClassContainer.weight_12_3body_x[myBiopolymerClassContainer.meas_12_3body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]];
+       
+  myBiopolymerClassContainer.l_max_t[0]+= myBiopolymerClassContainer.hist_global_12_3body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][myBiopolymerClassContainer.meas_12_3body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]]/myBiopolymerClassContainer.weight_12_3body_x[myBiopolymerClassContainer.meas_12_3body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]];       
+       
+   myBiopolymerClassContainer.counter_l_max_t[0]+= 1.0;       
+   
        if(d_x != 0.0) {
            
            myBiopolymerClassContainer.bias_3body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] += myBiopolymerClassContainer.delta_x12[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]/d_x; 
@@ -2068,6 +2215,13 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
            myBiopolymerClassContainer.weight_12_3body_y[myBiopolymerClassContainer.meas_12_3body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]]
                     ))/p_3body_y) - myBiopolymerClassContainer.hist_global_12_3body_y_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]);
        
+       myBiopolymerClassContainer.h_div_w_3body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = myBiopolymerClassContainer.hist_global_12_3body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][myBiopolymerClassContainer.meas_12_3body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]]/
+           myBiopolymerClassContainer.weight_12_3body_y[myBiopolymerClassContainer.meas_12_3body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]];       
+       
+  myBiopolymerClassContainer.l_max_t[0]+= myBiopolymerClassContainer.hist_global_12_3body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][myBiopolymerClassContainer.meas_12_3body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]]/myBiopolymerClassContainer.weight_12_3body_y[myBiopolymerClassContainer.meas_12_3body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]];       
+       
+   myBiopolymerClassContainer.counter_l_max_t[0]+= 1.0;       
+   
        if(d_y != 0.0) {
            
            myBiopolymerClassContainer.bias_3body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] +=
@@ -2097,6 +2251,13 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
            myBiopolymerClassContainer.weight_12_3body_z[myBiopolymerClassContainer.meas_12_3body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]]
                     ))/p_3body_z) - myBiopolymerClassContainer.hist_global_12_3body_z_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]);
        
+       myBiopolymerClassContainer.h_div_w_3body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = myBiopolymerClassContainer.hist_global_12_3body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][myBiopolymerClassContainer.meas_12_3body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]]/
+           myBiopolymerClassContainer.weight_12_3body_z[myBiopolymerClassContainer.meas_12_3body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]];       
+       
+  myBiopolymerClassContainer.l_max_t[0]+= myBiopolymerClassContainer.hist_global_12_3body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][myBiopolymerClassContainer.meas_12_3body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]]/myBiopolymerClassContainer.weight_12_3body_z[myBiopolymerClassContainer.meas_12_3body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]];       
+     
+   myBiopolymerClassContainer.counter_l_max_t[0]+= 1.0;   
+   
        if(d_z != 0.0) {
         
            myBiopolymerClassContainer.bias_3body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] +=
@@ -2194,7 +2355,8 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
      /myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      *myBiopolymerClassContainer.dL23_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      /myBiopolymerClassContainer.counter_threebody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count])
-     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];     
+     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_3body_x_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];     
      
      myBiopolymerClassContainer.bias_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]  = 
      (myBiopolymerClassContainer.dL12_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -2203,7 +2365,8 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
      /myBiopolymerClassContainer.counter_threebody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      *myBiopolymerClassContainer.dL23_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      /myBiopolymerClassContainer.counter_threebody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count])
-     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
+     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_3body_y_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
      
      myBiopolymerClassContainer.bias_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]  = 
      (myBiopolymerClassContainer.dL12_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
@@ -2212,7 +2375,8 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
      /myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      *myBiopolymerClassContainer.dL23_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
      /myBiopolymerClassContainer.counter_threebody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count])
-     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];  
+     *myBiopolymerClassContainer.bias_angle[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_3body_z_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];  
       
  if(myBiopolymerClassContainer.meas_12_3body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] > 1 &&
     myBiopolymerClassContainer.meas_12_3body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] <= 100 &&
@@ -2341,6 +2505,9 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
       
     }
       
+     myBiopolymerClassContainer.l_max_tt[0] += cosgamma;
+      myBiopolymerClassContainer.counter_l_max_tt[0] += 1.0;
+      
       bodyForces[body1.getMobilizedBodyIndex()][1][0] += abbassin_to_x*cosgamma;
       bodyForces[body1.getMobilizedBodyIndex()][1][1] += abbassin_to_y*cosgamma;       
       bodyForces[body1.getMobilizedBodyIndex()][1][2] += abbassin_to_z*cosgamma;        
@@ -2388,6 +2555,9 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
            
       
     }   
+    
+     myBiopolymerClassContainer.l_max_tt[0] += cosgamma;
+      myBiopolymerClassContainer.counter_l_max_tt[0] += 1.0;    
     
       bodyForces[body2.getMobilizedBodyIndex()][1][0] += abbassin_to_x*cosgamma;
       bodyForces[body2.getMobilizedBodyIndex()][1][1] += abbassin_to_y*cosgamma;       
@@ -2437,6 +2607,9 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
       
       }; 
       
+     myBiopolymerClassContainer.l_max_tt[0] += cosgamma;
+      myBiopolymerClassContainer.counter_l_max_tt[0] += 1.0;      
+      
       bodyForces[body3.getMobilizedBodyIndex()][1][0] += abbassin_to_x*cosgamma;
       bodyForces[body3.getMobilizedBodyIndex()][1][1] += abbassin_to_y*cosgamma;       
       bodyForces[body3.getMobilizedBodyIndex()][1][2] += abbassin_to_z*cosgamma;         
@@ -2451,15 +2624,18 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
      isnan(myBiopolymerClassContainer.bias_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]) == 0) {
       
    myBiopolymerClassContainer.beta_2_x_threebody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 
-   myBiopolymerClassContainer.bias_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]; /*- 
+   myBiopolymerClassContainer.bias_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+   (1.0 - myBiopolymerClassContainer.h_div_w_3body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]); /*- 
    myBiopolymerClassContainer.beta_2_x_threebody_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];*/
   
    myBiopolymerClassContainer.beta_2_y_threebody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 
-   myBiopolymerClassContainer.bias_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]; /*- 
+   myBiopolymerClassContainer.bias_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+   (1.0 - myBiopolymerClassContainer.h_div_w_3body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]); /*- 
    myBiopolymerClassContainer.beta_2_y_threebody_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];*/
   
    myBiopolymerClassContainer.beta_2_z_threebody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 
-   myBiopolymerClassContainer.bias_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]; /*- 
+   myBiopolymerClassContainer.bias_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+   (1.0 - myBiopolymerClassContainer.h_div_w_3body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]); /*- 
    myBiopolymerClassContainer.beta_2_z_threebody_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];*/ 
    
    bodyForces[body1.getMobilizedBodyIndex()][1][0] *= (1.0 + myBiopolymerClassContainer.beta_2_x_threebody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count])*exp(-myBiopolymerClassContainer.beta_2_x_threebody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]);
@@ -2531,14 +2707,21 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
       
  // 12
      
+  myBiopolymerClassContainer.h_div_w_2body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
+  myBiopolymerClassContainer.h_div_w_2body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;  
+  myBiopolymerClassContainer.h_div_w_2body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 0.0;
+  
   if(all_refs_true == 2) {   
      
      myBiopolymerClassContainer.bias_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]  = myBiopolymerClassContainer.dL12b_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
-     /myBiopolymerClassContainer.counter_twobody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
+     /myBiopolymerClassContainer.counter_twobody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_2body_x_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
      myBiopolymerClassContainer.bias_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]  = myBiopolymerClassContainer.dL12b_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
-     /myBiopolymerClassContainer.counter_twobody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
+     /myBiopolymerClassContainer.counter_twobody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_2body_y_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
      myBiopolymerClassContainer.bias_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]  = myBiopolymerClassContainer.dL12b_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
-     /myBiopolymerClassContainer.counter_twobody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];  
+     /myBiopolymerClassContainer.counter_twobody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_2body_z_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];  
  
  if(myBiopolymerClassContainer.meas_12_2body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] > 1 &&
     myBiopolymerClassContainer.meas_12_2body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] <= 100 &&
@@ -2560,9 +2743,16 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
        
    {
        
+  myBiopolymerClassContainer.l_max_t[0]+= myBiopolymerClassContainer.hist_global_12_2body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][myBiopolymerClassContainer.meas_12_2body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]]/myBiopolymerClassContainer.weight_12_2body_x[myBiopolymerClassContainer.meas_12_2body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]];       
+     
+   myBiopolymerClassContainer.counter_l_max_t[0]+= 1.0;   
+   
        d_x = (-log(((myBiopolymerClassContainer.hist_global_12_2body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][myBiopolymerClassContainer.meas_12_2body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]]/
            myBiopolymerClassContainer.weight_12_2body_x[myBiopolymerClassContainer.meas_12_2body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]]
                     ))/p_2body_x) - myBiopolymerClassContainer.hist_global_12_2body_x_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]);
+       
+       myBiopolymerClassContainer.h_div_w_2body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = myBiopolymerClassContainer.hist_global_12_2body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][myBiopolymerClassContainer.meas_12_2body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]]/
+           myBiopolymerClassContainer.weight_12_2body_x[myBiopolymerClassContainer.meas_12_2body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]];
        
        if(d_x != 0.0) {
         
@@ -2592,6 +2782,13 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
            myBiopolymerClassContainer.weight_12_2body_y[myBiopolymerClassContainer.meas_12_2body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]]
                     ))/p_2body_y) - myBiopolymerClassContainer.hist_global_12_2body_y_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]);       
        
+       myBiopolymerClassContainer.h_div_w_2body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = myBiopolymerClassContainer.hist_global_12_2body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][myBiopolymerClassContainer.meas_12_2body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]]/
+           myBiopolymerClassContainer.weight_12_2body_y[myBiopolymerClassContainer.meas_12_2body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]];       
+       
+  myBiopolymerClassContainer.l_max_t[0]+= myBiopolymerClassContainer.hist_global_12_2body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][myBiopolymerClassContainer.meas_12_2body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]]/myBiopolymerClassContainer.weight_12_2body_y[myBiopolymerClassContainer.meas_12_2body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]];        
+       
+   myBiopolymerClassContainer.counter_l_max_t[0]+= 1.0;   
+   
        if(d_y != 0.0) {
         
            myBiopolymerClassContainer.bias_2body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] += 
@@ -2621,6 +2818,13 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
            myBiopolymerClassContainer.weight_12_2body_z[myBiopolymerClassContainer.meas_12_2body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]]
                     ))/p_2body_z) - myBiopolymerClassContainer.hist_global_12_2body_z_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]);
        
+       myBiopolymerClassContainer.h_div_w_2body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = myBiopolymerClassContainer.hist_global_12_2body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][myBiopolymerClassContainer.meas_12_2body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]]/
+           myBiopolymerClassContainer.weight_12_2body_z[myBiopolymerClassContainer.meas_12_2body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]];       
+       
+  myBiopolymerClassContainer.l_max_t[0]+= myBiopolymerClassContainer.hist_global_12_2body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count][myBiopolymerClassContainer.meas_12_2body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]]/myBiopolymerClassContainer.weight_12_2body_z[myBiopolymerClassContainer.meas_12_2body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]];        
+       
+   myBiopolymerClassContainer.counter_l_max_t[0]+= 1.0;
+   
        if(d_z != 0.0) {
         
            myBiopolymerClassContainer.bias_2body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] += 
@@ -2699,11 +2903,14 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
    if(all_refs_true == 2) {  
      
      myBiopolymerClassContainer.bias_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]  = myBiopolymerClassContainer.dL12b_x1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
-     /myBiopolymerClassContainer.counter_twobody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
+     /myBiopolymerClassContainer.counter_twobody_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_2body_x_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
      myBiopolymerClassContainer.bias_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]  = myBiopolymerClassContainer.dL12b_y1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
-     /myBiopolymerClassContainer.counter_twobody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
+     /myBiopolymerClassContainer.counter_twobody_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_2body_y_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];
      myBiopolymerClassContainer.bias_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]  = myBiopolymerClassContainer.dL12b_z1b[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]
-     /myBiopolymerClassContainer.counter_twobody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];  
+     /myBiopolymerClassContainer.counter_twobody_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+     myBiopolymerClassContainer.bias_2body_z_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];  
  
  if(myBiopolymerClassContainer.meas_12_2body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] > 1 &&
     myBiopolymerClassContainer.meas_12_2body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] <= 100 &&
@@ -2834,6 +3041,9 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
       
     }
     
+     myBiopolymerClassContainer.l_max_tt[0] += cosgamma;
+      myBiopolymerClassContainer.counter_l_max_tt[0] += 1.0;    
+    
       bodyForces[body1.getMobilizedBodyIndex()][1][0] += abbassin_to_x*cosgamma;
       bodyForces[body1.getMobilizedBodyIndex()][1][1] += abbassin_to_y*cosgamma;       
       bodyForces[body1.getMobilizedBodyIndex()][1][2] += abbassin_to_z*cosgamma;      
@@ -2877,6 +3087,9 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
       
     }
     
+     myBiopolymerClassContainer.l_max_tt[0] += cosgamma;
+      myBiopolymerClassContainer.counter_l_max_tt[0] += 1.0;    
+    
       bodyForces[body2.getMobilizedBodyIndex()][1][0] += abbassin_to_x*cosgamma;
       bodyForces[body2.getMobilizedBodyIndex()][1][1] += abbassin_to_y*cosgamma;       
       bodyForces[body2.getMobilizedBodyIndex()][1][2] += abbassin_to_z*cosgamma;    
@@ -2890,15 +3103,18 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
            
       
    myBiopolymerClassContainer.beta_2_x_twobody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 
-    myBiopolymerClassContainer.bias_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]; /*- 
+    myBiopolymerClassContainer.bias_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+   (1.0 - myBiopolymerClassContainer.h_div_w_2body_x[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]); /*- 
            myBiopolymerClassContainer.beta_2_x_twobody_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];*/
    
    myBiopolymerClassContainer.beta_2_y_twobody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 
-      myBiopolymerClassContainer.bias_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]; /*- 
+      myBiopolymerClassContainer.bias_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+   (1.0 - myBiopolymerClassContainer.h_div_w_2body_y[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]); /*- 
            myBiopolymerClassContainer.beta_2_y_twobody_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]; */
       
    myBiopolymerClassContainer.beta_2_z_twobody[(myParameterReader.ntc_class_container.getNTC_Class(r)).count] = 
-      myBiopolymerClassContainer.bias_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]; /*- 
+      myBiopolymerClassContainer.bias_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]*
+   (1.0 - myBiopolymerClassContainer.h_div_w_2body_z[(myParameterReader.ntc_class_container.getNTC_Class(r)).count]); /*- 
            myBiopolymerClassContainer.beta_2_z_twobody_last[(myParameterReader.ntc_class_container.getNTC_Class(r)).count];  */     
    
                
@@ -2921,6 +3137,26 @@ for (int r=0;r<myParameterReader.ntc_class_container.numNTC_Torsions();r++) {
   };
 //  if(r == (myParameterReader.ntc_class_container.numNTC_Torsions()-1)) std::cout << " D_T_12 : " << diff_vec12 << " D_T_23 : " << diff_vec23 << " D_T_13 : " << diff_vec13 << " DIFF_ANGLE : " << diff_angle_123 << "\n";
  };
+ 
+ if(myBiopolymerClassContainer.timesteps[0]%1000 == 0 || myBiopolymerClassContainer.timesteps[0] == 1) {
+ 
+myBiopolymerClassContainer.l_max_t[0] /= myBiopolymerClassContainer.counter_l_max_t[0];
+myBiopolymerClassContainer.l_max_tt[0] /= myBiopolymerClassContainer.counter_l_max_tt[0];
+ 
+ myBiopolymerClassContainer.flextimestep[0] = 0.001*(1.0 + ((myBiopolymerClassContainer.l_max_tt[0])));
+ 
+ if(rand()%100/100.0 < (1.0 -myBiopolymerClassContainer.l_max_t[0])) myBiopolymerClassContainer.flextimestep[0] = -myBiopolymerClassContainer.flextimestep[0];
+ 
+myBiopolymerClassContainer.l_max_t[0]= 0;
+myBiopolymerClassContainer.l_max_tt[0] = 0;
+
+myBiopolymerClassContainer.counter_l_max_t[0]= 0;
+myBiopolymerClassContainer.counter_l_max_tt[0] = 0;
+
+ };
+ 
+ myBiopolymerClassContainer.timesteps[0]++;
+ 
 };
  
  

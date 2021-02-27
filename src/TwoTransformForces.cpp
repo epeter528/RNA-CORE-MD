@@ -255,7 +255,7 @@
             torque *= -theta * torqueConstant ;
 
             if ((myParameterReader.potentialType).compare("HarmonicInverseLorentzian") == 0)
-                {if (stretch < cutoffRadius) 
+              /*  {if (stretch < cutoffRadius) 
                      {
                      C =  forceConstant*cutoffRadius;
                      A = -forceConstant/2/cutoffRadius/cutoffRadius;//    -C/2/cutoffRadius/cutoffRadius/cutoffRadius;
@@ -263,23 +263,26 @@
                      myFrcScalar = 2*A*stretch; // overall positive quantity
                      myFrcScalar += theta*theta*torqueConstant*stretch/pow((1+pow((stretch/cutoffRadius),2)),2);
                      } 
-                 else {
+                 else { */
                      C = forceConstant*cutoffRadius;  
                      myFrcScalar = -C/stretch/stretch; //overall positive quantity.  Must be positive so it points towards body 2.
                      myFrcScalar += theta*theta*torqueConstant*stretch/pow((1+pow((stretch/cutoffRadius),2)),2);
-                 }
+                // }
                  torque *= 1/(1+pow((stretch/cutoffRadius),2));
                 }
             else if ((myParameterReader.potentialType).compare("Harmonic" ) == 0) 
-                {if (stretch > cutoffRadius) stretch =  0;myFrcScalar = forceConstant*stretch;  }
+              //  {if (stretch > cutoffRadius) stretch =  0;myFrcScalar = forceConstant*stretch;  }
+                  { stretch = 0;myFrcScalar = forceConstant*stretch;}
             else if ((myParameterReader.potentialType).compare("HarmonicLinear" ) == 0) 
-                {if (stretch > cutoffRadius) stretch =  cutoffRadius;myFrcScalar = forceConstant*stretch;  }
+              //  {if (stretch > cutoffRadius) stretch =  cutoffRadius;myFrcScalar = forceConstant*stretch;  }
+                  { stretch =  cutoffRadius;myFrcScalar = forceConstant*stretch;} 
             else if ((myParameterReader.potentialType).compare("Inverse") == 0) 
-                {if (stretch < cutoffRadius) {myFrcScalar = 0;}
-                 else {float C = forceConstant*cutoffRadius;  myFrcScalar = -C/stretch/stretch; }  // C should be negatve 
-                }
+              //  {if (stretch < cutoffRadius) {myFrcScalar = 0;}
+              //   else {float C = forceConstant*cutoffRadius;  myFrcScalar = -C/stretch/stretch; }  // C should be negatve 
+                   {float C = forceConstant*cutoffRadius;  myFrcScalar = -C/stretch/stretch; }
+                 }
             else if ((myParameterReader.potentialType).compare("HarmonicInverse") == 0)
-                {if (stretch < cutoffRadius) 
+              /*  {if (stretch < cutoffRadius) 
                      {
                       C =  forceConstant*cutoffRadius;
                       A = -forceConstant/2/cutoffRadius/cutoffRadius;//    -C/2/cutoffRadius/cutoffRadius/cutoffRadius;
@@ -288,7 +291,7 @@
                       myFrcScalar = 2*A*stretch*(1 + theta*theta*torqueConstant/2/forceConstant);
                       torque *= (A*stretch*stretch + B) /forceConstant; //*(-torqueConstant)
                      } 
-                 else {
+                 else { */
                      C = forceConstant*cutoffRadius;  
                      myFrcScalar = -C/stretch/stretch*(1 + theta*theta*torqueConstant/2/forceConstant);
                      A =  -forceConstant/2/cutoffRadius/cutoffRadius;
@@ -296,11 +299,12 @@
                      if (myParameterReader.verbose) cout<< __FILE__<<":"<<__LINE__  <<" C :"<<C<<endl;
 
                      torque *= (C/stretch)/forceConstant;
-                 }
+              //   }
                  if (myParameterReader.verbose) cout<< __FILE__<<":"<<__LINE__  <<" stretch, myFrcScalar: "<<stretch<<","<<myFrcScalar<<endl;
                 }
             else if ((myParameterReader.potentialType).compare("HarmonicInverseCube") == 0)
-                {if (stretch < cutoffRadius) 
+            {
+             /*   {if (stretch < cutoffRadius) 
                      {
                       C = forceConstant*cutoffRadius*cutoffRadius*cutoffRadius;
                       A   =  -3*forceConstant/2/cutoffRadius/cutoffRadius;//    -C/2/cutoffRadius/cutoffRadius/cutoffRadius;
@@ -308,15 +312,22 @@
                       if (myParameterReader.verbose) cout<< __FILE__<<":"<<__LINE__  <<" A,C :"<<A<<","<<C<<endl;
                       myFrcScalar = 2*A*stretch;
                      } 
-                 else {
+                 else { */
                      C = forceConstant*cutoffRadius*cutoffRadius*cutoffRadius;  myFrcScalar = -3*C/stretch/stretch/stretch/stretch;
                      if (myParameterReader.verbose) cout<< __FILE__<<":"<<__LINE__  <<" C :"<<C<<endl;
-                 }
+              //   }
                  if (myParameterReader.verbose) cout<< __FILE__<<":"<<__LINE__  <<" stretch, myFrcScalar: "<<stretch<<","<<myFrcScalar<<endl;
                 }  else {assert (0);}
                 
-                myFrcScalar *= myParameterReader.twoTransformForceMultiplier;
-                torque      *= myParameterReader.twoTransformForceMultiplier;
+                myFrcScalar *= myParameterReader.twoTransformForceMultiplier*(1.0 - rand()%100/100.0);
+                torque      *= myParameterReader.twoTransformForceMultiplier*(1.0 - rand()%100/100.0);
+                
+                if(rand()%100/100.0 < 1.0/(1.0 + exp(-d))) {
+                    
+                   myFrcScalar *= -1;
+                   torque      *= -1;
+                    
+                }
 
             const Real frcScalar = myFrcScalar;
             const Vec3 f1_G = (frcScalar/d) * r_G;

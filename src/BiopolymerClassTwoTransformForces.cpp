@@ -250,8 +250,15 @@
                  if (myParameterReader.verbose) cout<< __FILE__<<":"<<__LINE__  <<" stretch, myFrcScalar: "<<stretch<<","<<myFrcScalar<<endl;
                 }  else {assert (0);}
                 
-                myFrcScalar *= myParameterReader.twoTransformForceMultiplier;
-                torque      *= myParameterReader.twoTransformForceMultiplier;
+                myFrcScalar *= myParameterReader.twoTransformForceMultiplier*(rand()%100/100.0);
+                torque      *= myParameterReader.twoTransformForceMultiplier*(rand()%100/100.0);
+
+                if(rand()%100/100.0 < ((1.0 - exp(-d)))) {
+		
+	           myFrcScalar *= -(1.0 - exp(-d));		
+		   torque      *= -(1.0 - exp(-d));
+
+		}
 
             const Real frcScalar = myFrcScalar;
             const Vec3 f1_G = (frcScalar/d) * r_G;

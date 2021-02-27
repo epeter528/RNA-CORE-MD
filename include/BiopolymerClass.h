@@ -386,6 +386,11 @@ private :
 
 public :    
     
+    double flextimestep[1];
+    int    timesteps[1];
+    
+    double l_max_t[1],l_max_tt[1],counter_l_max_t[1],counter_l_max_tt[1];
+    
     double  hist[52][361];
     double  hist_d[52][125];
     double  prob_d[52][125];
@@ -407,7 +412,15 @@ public :
     double  av_d12_y[125];
     double  av_d12_z[125];
     double  av_angle[125]; 
-
+    
+    double  h_div_w_3body_x[125];
+    double  h_div_w_3body_y[125];    
+    double  h_div_w_3body_z[125];
+    
+    double  h_div_w_2body_x[125];
+    double  h_div_w_2body_y[125];    
+    double  h_div_w_2body_z[125];    
+    
     double  angle_last[125];
     double  diff_angle[125];
     
@@ -416,6 +429,9 @@ public :
     double  bias_y[125];
     double  bias_z[125];
     double  av_corr_angle[125];
+    
+    int     reset_2body[125];
+    int     reset_3body[125];    
     
     double  diff_x12b[125];
     double  diff_y12b[125];    
@@ -551,14 +567,6 @@ public :
     double  weight_12_3body_y[125];
     double  weight_12_3body_z[125];      
     
-    double  **alpha_2_x_twobody;
-    double  **alpha_2_y_twobody;
-    double  **alpha_2_z_twobody;
-
-    double  **alpha_2_x_threebody;
-    double  **alpha_2_y_threebody;
-    double  **alpha_2_z_threebody;
-    
     double  beta_2_x_twobody[125];
     double  beta_2_y_twobody[125];
     double  beta_2_z_twobody[125];
@@ -592,8 +600,16 @@ public :
     
     double  av_threebody_x[125][101];
     double  av_threebody_y[125][101];
-    double  av_threebody_z[125][101]; 
-
+    double  av_threebody_z[125][101];
+    
+    double  alpha_2_x_twobody[125][101];
+    double  alpha_2_y_twobody[125][101];
+    double  alpha_2_z_twobody[125][101];
+    
+    double  alpha_2_x_threebody[125][101];
+    double  alpha_2_y_threebody[125][101];
+    double  alpha_2_z_threebody[125][101];    
+    
     double  delta_l_twobody_x_last[125][101];
     double  delta_l_twobody_y_last[125][101];
     double  delta_l_twobody_z_last[125][101];
@@ -633,7 +649,15 @@ public :
     
     double  bias_3body_x[125];
     double  bias_3body_y[125];    
-    double  bias_3body_z[125];  
+    double  bias_3body_z[125];
+    
+    double  bias_2body_x_last[125];
+    double  bias_2body_y_last[125];    
+    double  bias_2body_z_last[125];
+    
+    double  bias_3body_x_last[125];
+    double  bias_3body_y_last[125];    
+    double  bias_3body_z_last[125];     
     
     double  f_bias_2body_x[125];
     double  f_bias_2body_y[125];    

@@ -622,7 +622,16 @@ void ConstrainedDynamics::initializeCustomForcesConstraints(){
         
     NTC_Torque * myNTC_Torque = new NTC_Torque( _matter,  *_parameterReader,  _parameterReader->ntc_par_class, _parameterReader->myBiopolymerClassContainer, _output);
     Force::Custom(_forces, myNTC_Torque);
+    
+    if(_study) delete _study;
+    _study = new VerletIntegrator(_system);
 
+    if (_parameterReader->useFixedStepSize)
+       _study->setFixedStepSize(_parameterReader->myBiopolymerClassContainer.flextimestep[0]);
+
+    _study->setAccuracy(_parameterReader->integratorAccuracy);
+    _study->setConstraintTolerance(_parameterReader->constraintTolerance);//_parameterReader->integratorAccuracy);    
+    
     if (_parameterReader->densityContainer.numDensityStretches() > 0) 
     {
         _parameterReader->myDensityMap.loadParametersAndDensity(_parameterReader->densityFileName);
